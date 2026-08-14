@@ -90,6 +90,17 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
   <div class="history" id="expenseHistory"></div>
 </div>
 
+<div class="section">💾 Sao lưu dữ liệu</div>
+<div class="card">
+  <div class="actions">
+    <button onclick="backupData()">⬇️ Sao lưu</button>
+    <button onclick="document.getElementById('restoreFile').click()">⬆️ Khôi phục</button>
+  </div>
+  <input id="restoreFile" type="file" accept=".json,application/json"
+         style="display:none" onchange="restoreData(event)">
+  <div class="note">Nên sao lưu định kỳ. File sao lưu chứa món, giá, doanh thu, thao tác và chi phí đang lưu trên máy.</div>
+</div>
+
 <div class="actions">
   <button onclick="newDay()">🔄 Sang ngày mới</button>
 </div>
@@ -235,8 +246,64 @@ function newDay(){
  if(!confirm("Xóa số liệu hôm nay? Lịch sử các ngày trước vẫn giữ nguyên."))return;
  counts={};actions=[];history[key()]={cups:0,total:0};save();render();
 }
+
+function backupData(){
+  const data={
+    version:1,
+    exportedAt:new Date().toISOString(),
+    tinMenu:menu,
+    tinHistory:history,
+    tinToday:counts,
+    tinActions:actions,
+    tinExpenses:expenses
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const stamp=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download="quaytin-sao-luu-"+stamp+".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  alert("Đã tạo file sao lưu. Hãy lưu file này ở nơi an toàn.");
+}
+
+function restoreData(event){
+  const file=event.target.files && event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data || !Array.isArray(data.tinMenu) ||
+         typeof data.tinHistory!=="object" ||
+         typeof data.tinToday!=="object" ||
+         !Array.isArray(data.tinActions) ||
+         !Array.isArray(data.tinExpenses)){
+        throw new Error("File sao lưu không đúng định dạng.");
+      }
+      if(!confirm("Khôi phục sẽ thay dữ liệu hiện tại bằng dữ liệu trong file. Tiếp tục?")) return;
+      menu=data.tinMenu;
+      history=data.tinHistory||{};
+      counts=data.tinToday||{};
+      actions=data.tinActions||[];
+      expenses=data.tinExpenses||[];
+      localStorage.setItem("tinMenu",JSON.stringify(menu));
+      save();
+      render();
+      alert("Đã khôi phục dữ liệu thành công.");
+    }catch(e){
+      alert("Không thể khôi phục: file không hợp lệ.");
+    }finally{
+      event.target.value="";
+    }
+  };
+  reader.readAsText(file);
+}
+
 render();
 </script>
-<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
 </html>
