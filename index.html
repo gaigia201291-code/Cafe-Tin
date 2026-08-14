@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
-<title>Quầy Tin - Sổ bán hàng</title>
+<title>Cafe Tin ❤️ - Sổ bán hàng</title>
 <style>
 *{box-sizing:border-box} body{font-family:Arial,sans-serif;background:#f3f6ef;margin:0;color:#273027;padding:14px}
 h1{text-align:center;margin:5px 0 3px;font-size:25px}.sub{text-align:center;color:#718070;margin-bottom:15px}
@@ -43,7 +43,7 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
 </style>
 </head>
 <body>
-<h1>☕ QUẦY TIN</h1>
+<h1>☕ CAFE TIN ❤️</h1>
 <div class="sub" id="today"></div>
 
 <div class="section" style="margin-top:10px">🧾 ORDER</div>
@@ -197,7 +197,7 @@ function toggleOrder(){
   btn.textContent=open?"➕ Mở order":"➖ Đóng order";
 }
 function changeOrder(i,d){
-  if(!active()){alert("Quầy Tin bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
+  if(!active()){alert("Cafe Tin ❤️ bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
   orderCart[i]=Math.max(0,(orderCart[i]||0)+d);
   if(orderCart[i]===0) delete orderCart[i];
   save(); render();
@@ -256,7 +256,7 @@ function printOrder(order){
 }
 
 function change(i,d){
- if(!active()){alert("Quầy Tin bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
+ if(!active()){alert("Cafe Tin ❤️ bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
  if(d>0) actions.push({i,old:counts[i]||0});
  counts[i]=Math.max(0,(counts[i]||0)+d);
  const k=key();
