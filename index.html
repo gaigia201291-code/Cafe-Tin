@@ -7,8 +7,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="192x192" href="favicon.png?v=2">
-<link rel="apple-touch-icon" sizes="192x192" href="favicon.png?v=2">
 <title>Quầy Tin - Sổ bán hàng</title>
 <style>
 *{box-sizing:border-box} body{font-family:Arial,sans-serif;background:#f3f6ef;margin:0;color:#273027;padding:14px}
@@ -26,6 +24,22 @@ button{border:0;border-radius:12px;padding:9px 14px;font-size:21px;background:#e
 input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:right}
 .note{font-size:12px;color:#7b857b;margin-top:8px}
 #pricesBox{display:none}
+
+.order-box{background:#fff;border-radius:17px;padding:14px;margin:10px 0;box-shadow:0 2px 9px #00000012}
+.order-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eee}
+.order-item .name{font-weight:700;flex:1}
+.order-total{font-size:22px;font-weight:800;text-align:right;margin-top:10px}
+.order-actions{display:flex;gap:8px;margin-top:10px}
+.order-actions button{flex:1;font-size:15px}
+#invoice{display:none}
+@media print{
+  body>*{display:none!important}
+  #invoice{display:block!important;width:72mm;margin:0 auto;font-family:Arial,sans-serif;font-size:12px;color:#000}
+  #invoice h2{text-align:center;margin:0 0 5px;font-size:18px}
+  #invoice .line{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+  #invoice .total{font-size:15px;font-weight:800;border-top:1px dashed #000;margin-top:5px;padding-top:5px}
+  @page{size:72mm auto;margin:3mm}
+}
 </style>
 </head>
 <body>
@@ -59,10 +73,34 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
     <button style="width:100%;font-size:15px" onclick="addItem()">Lưu món mới</button>
   </div>
 
- <div class="section">📅 Doanh thu theo ngày</div>
+ 
+<div class="section">🧾 Order mới</div>
+<div class="order-box">
+  <div id="orderItems"></div>
+  <div class="order-total">Tổng order: <span id="orderTotal">0đ</span></div>
+  <div class="order-actions">
+    <button onclick="clearOrder()">🗑 Xóa order</button>
+    <button onclick="checkoutOrder()">✅ Chốt order</button>
+  </div>
+  <div class="note">Bấm +/− ở món phía trên để đưa món vào order. Khi chốt, order được lưu vào thống kê ngày và có thể in hóa đơn.</div>
+</div>
+
+<div class="section">📊 Thống kê hôm nay</div>
+<div class="card">
+  <div><strong id="todayOrders">0</strong> order</div>
+  <div style="margin-top:6px"><strong id="todayRevenue">0đ</strong> doanh thu từ order</div>
+  <div class="note" id="todayItems">0 món đã chốt</div>
+</div>
+
+<div class="section">📅 Doanh thu theo ngày</div>
 <div class="card history" id="history"></div>
 
+
+<div class="section">🧾 Lịch sử order hôm nay</div>
+<div class="card history" id="orderHistory"></div>
+
 <div class="section">📊 Doanh thu tháng này</div>
+
 <div class="card">
   <div class="month" id="monthTotal">0đ</div>
   <div class="note" id="monthCups">0 món</div>
@@ -107,6 +145,7 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
   <button onclick="newDay()">🔄 Sang ngày mới</button>
 </div>
 
+<div id="invoice"></div>
 <script>
 const defaultMenu=[
 ["Cà phê đen",12000],["Cà phê sữa",15000],["Cà phê muối",17000],
@@ -118,11 +157,13 @@ let history=JSON.parse(localStorage.getItem("tinHistory")||"{}");
 let counts=JSON.parse(localStorage.getItem("tinToday")||"{}");
 let actions=JSON.parse(localStorage.getItem("tinActions")||"[]");
 let expenses=JSON.parse(localStorage.getItem("tinExpenses")||"[]");
+let orders=JSON.parse(localStorage.getItem("tinOrders")||"[]");
+let orderCart=JSON.parse(localStorage.getItem("tinOrderCart")||"{}");
 const START_DATE="2026-08-18";
 
 function key(){return new Date().toISOString().slice(0,10)}
 function active(){return key()>=START_DATE}
-function save(){localStorage.setItem("tinToday",JSON.stringify(counts));localStorage.setItem("tinHistory",JSON.stringify(history));localStorage.setItem("tinActions",JSON.stringify(actions));localStorage.setItem("tinExpenses",JSON.stringify(expenses))}
+function save(){localStorage.setItem("tinToday",JSON.stringify(counts));localStorage.setItem("tinHistory",JSON.stringify(history));localStorage.setItem("tinActions",JSON.stringify(actions));localStorage.setItem("tinExpenses",JSON.stringify(expenses));localStorage.setItem("tinOrders",JSON.stringify(orders));localStorage.setItem("tinOrderCart",JSON.stringify(orderCart))}
 function money(n){return n.toLocaleString("vi-VN")+"đ"}
 function render(){
  const d=new Date();
@@ -132,16 +173,76 @@ function render(){
  document.getElementById("items").innerHTML=menu.map((m,i)=>`
  <div class="card"><div class="row">
  <div class="name">${m[0]}<div class="price">${money(m[1])}</div></div>
- <button onclick="change(${i},-1)">−</button>
- <div class="count">${counts[i]||0}</div>
- <button onclick="change(${i},1)">+</button>
+ <button onclick="changeOrder(${i},-1)">−</button>
+ <div class="count">${orderCart[i]||0}</div>
+ <button onclick="changeOrder(${i},1)">+</button>
  </div></div>`).join("");
  let cups=0,total=0;
  menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m[1]});
  document.getElementById("cups").textContent=cups;
  document.getElementById("money").textContent=money(total);
- renderHistory(); renderMonth(); renderExpenses();
+ renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses();
 }
+
+function changeOrder(i,d){
+  if(!active()){alert("Quầy Tin bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
+  orderCart[i]=Math.max(0,(orderCart[i]||0)+d);
+  if(orderCart[i]===0) delete orderCart[i];
+  save(); render();
+}
+function renderOrder(){
+  let total=0, out="";
+  menu.forEach((m,i)=>{
+    const q=orderCart[i]||0;
+    if(q){
+      const line=q*m[1]; total+=line;
+      out+=`<div class="order-item"><span class="name">${m[0]}</span><span>${q} × ${money(m[1])}</span><strong>${money(line)}</strong></div>`;
+    }
+  });
+  document.getElementById("orderItems").innerHTML=out||'<div class="note">Chưa chọn món.</div>';
+  document.getElementById("orderTotal").textContent=money(total);
+}
+function orderItems(){
+  return menu.map((m,i)=>({name:m[0],qty:orderCart[i]||0,price:Number(m[1])||0})).filter(x=>x.qty>0);
+}
+function checkoutOrder(){
+  const items=orderItems();
+  if(!items.length){alert("Chưa có món trong order.");return}
+  const total=items.reduce((s,x)=>s+x.qty*x.price,0), now=new Date();
+  const order={id:Date.now(),date:key(),time:now.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}),items,total};
+  orders.push(order);
+  items.forEach(x=>{
+    const idx=menu.findIndex(m=>m[0]===x.name);
+    if(idx>=0) counts[idx]=(counts[idx]||0)+x.qty;
+  });
+  history[key()]=calc();
+  orderCart={}; save(); render(); printOrder(order);
+}
+function clearOrder(){
+  if(Object.keys(orderCart).length && confirm("Xóa order đang chọn?")){orderCart={};save();render();}
+}
+function todayOrders(){return orders.filter(o=>o.date===key());}
+function renderTodayOrderStats(){
+  const list=todayOrders();
+  const revenue=list.reduce((s,o)=>s+(Number(o.total)||0),0);
+  const items=list.reduce((s,o)=>s+o.items.reduce((a,x)=>a+x.qty,0),0);
+  document.getElementById("todayOrders").textContent=list.length;
+  document.getElementById("todayRevenue").textContent=money(revenue);
+  document.getElementById("todayItems").textContent=items+" món đã chốt";
+}
+function renderOrderHistory(){
+  const list=todayOrders().slice().reverse();
+  document.getElementById("orderHistory").innerHTML=list.length?list.map(o=>{
+    const text=o.items.map(x=>`${x.name} × ${x.qty}`).join(", ");
+    return `<div><span>#${String(o.id).slice(-6)} • ${o.time}<br><small>${text}</small></span><strong>${money(o.total)}<br><button onclick='printOrder(${JSON.stringify(o)})' style="font-size:12px;padding:4px 7px">🖨️ In lại</button></strong></div>`;
+  }).join(""):"Chưa có order hôm nay.";
+}
+function printOrder(order){
+  const lines=order.items.map(x=>`<div class="line"><span>${x.name} × ${x.qty}</span><span>${money(x.qty*x.price)}</span></div>`).join("");
+  document.getElementById("invoice").innerHTML=`<h2>☕ TIN COFFEE</h2><div style="text-align:center">Hóa đơn #${String(order.id).slice(-6)}</div><div style="text-align:center">${order.date} ${order.time}</div><hr>${lines}<div class="line total"><span>TỔNG CỘNG</span><span>${money(order.total)}</span></div><div style="text-align:center;margin-top:10px">Cảm ơn quý khách!</div>`;
+  setTimeout(()=>window.print(),80);
+}
+
 function change(i,d){
  if(!active()){alert("Quầy Tin bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
  if(d>0) actions.push({i,old:counts[i]||0});
@@ -246,7 +347,7 @@ function savePrices(){
 }
 function newDay(){
  if(!confirm("Xóa số liệu hôm nay? Lịch sử các ngày trước vẫn giữ nguyên."))return;
- counts={};actions=[];history[key()]={cups:0,total:0};save();render();
+ counts={};actions=[];orderCart={};history[key()]={cups:0,total:0};save();render();
 }
 
 function backupData(){
