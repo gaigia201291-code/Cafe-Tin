@@ -46,7 +46,23 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
 <h1>☕ QUẦY TIN</h1>
 <div class="sub" id="today"></div>
 
-<div id="items"></div>
+<div class="section" style="margin-top:10px">🧾 ORDER</div>
+<div class="order-box" style="margin-top:6px">
+  <button id="orderToggle" onclick="toggleOrder()" style="width:100%;font-size:18px">➕ Mở order</button>
+</div>
+<div id="orderPanel" style="display:none">
+  <div id="items"></div>
+  <div class="order-box">
+    <div class="section" style="margin:0 0 8px">Món đã chọn</div>
+    <div id="orderItems"></div>
+    <div class="order-total">Tổng order: <span id="orderTotal">0đ</span></div>
+    <div class="order-actions">
+      <button onclick="clearOrder()">🗑 Xóa order</button>
+      <button onclick="checkoutOrder()">✅ Chốt order</button>
+    </div>
+    <div class="note">Chọn món và số lượng ở phía trên. Khi chốt, order được lưu vào thống kê và có thể in hóa đơn.</div>
+  </div>
+</div>
 
 <div class="summary">
   <div><span>Tổng số món hôm nay</span><strong id="cups">0</strong></div>
@@ -74,17 +90,6 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
   </div>
 
  
-<div class="section">🧾 Order mới</div>
-<div class="order-box">
-  <div id="orderItems"></div>
-  <div class="order-total">Tổng order: <span id="orderTotal">0đ</span></div>
-  <div class="order-actions">
-    <button onclick="clearOrder()">🗑 Xóa order</button>
-    <button onclick="checkoutOrder()">✅ Chốt order</button>
-  </div>
-  <div class="note">Bấm +/− ở món phía trên để đưa món vào order. Khi chốt, order được lưu vào thống kê ngày và có thể in hóa đơn.</div>
-</div>
-
 <div class="section">📊 Thống kê hôm nay</div>
 <div class="card">
   <div><strong id="todayOrders">0</strong> order</div>
@@ -184,6 +189,13 @@ function render(){
  renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses();
 }
 
+function toggleOrder(){
+  const panel=document.getElementById("orderPanel");
+  const btn=document.getElementById("orderToggle");
+  const open=panel.style.display!=="none";
+  panel.style.display=open?"none":"block";
+  btn.textContent=open?"➕ Mở order":"➖ Đóng order";
+}
 function changeOrder(i,d){
   if(!active()){alert("Quầy Tin bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
   orderCart[i]=Math.max(0,(orderCart[i]||0)+d);
