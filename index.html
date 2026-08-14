@@ -304,6 +304,13 @@ function restoreData(event){
 }
 
 render();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", {scope: "./"})
+      .catch(err => console.log("Service worker:", err));
+  });
+}
 </script>
 </body>
 </html>
