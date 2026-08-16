@@ -84,7 +84,7 @@ select{width:100%;padding:6px;border:1px solid #ddd;border-radius:9px;background
 <div class="card">
   <div class="note">Nhập giá vốn thực tế của từng món. Hệ thống dùng Cost này để tính vốn, lãi từng món, lãi Grab, lãi cuối ngày và lãi cuối tháng.</div>
   <div id="costManager"></div>
-  <button style="width:100%;font-size:15px;margin-top:8px" onclick="saveCostManager()">💾 Lưu Cost tất cả món</button>
+  <button type="button" style="width:100%;font-size:15px;margin-top:8px;position:relative;z-index:10;pointer-events:auto" onclick="saveCostManager()">💾 Lưu Cost tất cả món</button>
 </div>
 
 <div id="addItemBox" style="display:none;margin-top:10px">
@@ -531,14 +531,27 @@ function renderCostManager(){
     return `<div style="padding:9px 0;border-bottom:1px solid #eee">
       <div class="row">
         <span class="name"><strong>${m.name}</strong><div class="price">Giá bán: ${money(m.price)}</div></span>
-        <input id="cm${i}" type="number" min="0" value="${c}" placeholder="Cost"
-          style="width:105px;text-align:right">
+        <input id="cm${i}" type="number" min="0" step="1" inputmode="numeric" value="${c}" placeholder="Cost"
+          style="width:120px;text-align:right;position:relative;z-index:5;pointer-events:auto"
+          oninput="saveOneCost(${i}, this.value)" onchange="saveOneCost(${i}, this.value)">
       </div>
       <div style="font-size:12px;margin-top:5px">
         Hôm nay: ${q} món • Vốn: <strong>${money(costTotal)}</strong> • Lãi gộp: <strong>${money(profit)}</strong>
       </div>
     </div>`;
   }).join("");
+}
+function saveOneCost(i, value){
+  if(!menu[i]) return;
+  const raw=String(value==null?"":value).trim();
+  if(raw==="") return;
+  const n=Number(raw);
+  if(!Number.isFinite(n) || n<0) return;
+  menu[i].cost=Math.max(0,n);
+  const costs={};
+  menu.forEach(m=>{costs[String(m.name||"").trim()]=Math.max(0,Number(m.cost)||0)});
+  localStorage.setItem("tinMenu",JSON.stringify(menu));
+  localStorage.setItem("tinCosts",JSON.stringify(costs));
 }
 function saveCostManager(){
   let changed=0;
@@ -552,7 +565,7 @@ function saveCostManager(){
   });
   // Lưu cả menu và bảng Cost riêng, sau đó dùng cùng một hàm save() để tránh ghi đè dữ liệu.
   save();
-  render();
+  renderCostManager();
   alert("Đã lưu Cost từng món" + (changed ? " thành công." : "."));
 }
 
