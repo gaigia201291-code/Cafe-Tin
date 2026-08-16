@@ -80,11 +80,20 @@ select{width:100%;padding:6px;border:1px solid #ddd;border-radius:9px;background
   </div>
 </div>
 
+<div class="section">💰 Quản lý Cost từng món</div>
+<div class="card">
+  <div class="note">Nhập giá vốn thực tế của từng món. Hệ thống dùng Cost này để tính vốn, lãi từng món, lãi Grab, lãi cuối ngày và lãi cuối tháng.</div>
+  <div id="costManager"></div>
+  <button style="width:100%;font-size:15px;margin-top:8px" onclick="saveCostManager()">💾 Lưu Cost tất cả món</button>
+</div>
+
 <div id="addItemBox" style="display:none;margin-top:10px">
     <div class="section">➕ Thêm món mới</div>
     <input id="newItemName" type="text" placeholder="Tên món"
            style="width:100%;text-align:left;margin-bottom:7px">
     <input id="newItemPrice" type="number" min="0" placeholder="Giá bán"
+           style="width:100%;text-align:left;margin-bottom:7px">
+    <input id="newItemCost" type="number" min="0" placeholder="Cost / giá vốn"
            style="width:100%;text-align:left;margin-bottom:7px">
     <button style="width:100%;font-size:15px" onclick="addItem()">Lưu món mới</button>
   </div>
@@ -245,7 +254,7 @@ function render(){
  menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m.price});
  document.getElementById("cups").textContent=cups;
  document.getElementById("money").textContent=money(total);
- renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports();
+ renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports(); renderCostManager();
 }
 
 function toggleOrder(){
@@ -474,15 +483,51 @@ function showAddItem(){
 function addItem(){
   const name=document.getElementById("newItemName").value.trim();
   const price=Math.max(0,Number(document.getElementById("newItemPrice").value)||0);
+  const cost=Math.max(0,Number(document.getElementById("newItemCost").value)||0);
   if(!name){alert("Em nhập tên món nhé.");return}
   if(!price){alert("Em nhập giá bán nhé.");return}
-  menu.push({name,price,cost:0});
+  menu.push({name,price,cost});
   localStorage.setItem("tinMenu",JSON.stringify(menu));
   document.getElementById("newItemName").value="";
   document.getElementById("newItemPrice").value="";
+  document.getElementById("newItemCost").value="";
   document.getElementById("addItemBox").style.display="none";
   render();
   alert("Đã thêm món mới.");
+}
+
+
+function renderCostManager(){
+  const box=document.getElementById("costManager");
+  if(!box) return;
+  box.innerHTML=menu.map((m,i)=>{
+    const q=Number(counts[i]||0);
+    const c=Number(m.cost)||0;
+    const revenue=q*(Number(m.price)||0);
+    const costTotal=q*c;
+    const profit=revenue-costTotal;
+    return `<div style="padding:9px 0;border-bottom:1px solid #eee">
+      <div class="row">
+        <span class="name"><strong>${m.name}</strong><div class="price">Giá bán: ${money(m.price)}</div></span>
+        <input id="cm${i}" type="number" min="0" value="${c}" placeholder="Cost"
+          style="width:105px;text-align:right">
+      </div>
+      <div style="font-size:12px;margin-top:5px">
+        Hôm nay: ${q} món • Vốn: <strong>${money(costTotal)}</strong> • Lãi gộp: <strong>${money(profit)}</strong>
+      </div>
+    </div>`;
+  }).join("");
+}
+function saveCostManager(){
+  menu=menu.map((m,i)=>({
+    name:m.name,
+    price:Number(m.price)||0,
+    cost:Math.max(0,Number(document.getElementById("cm"+i)?.value)||0)
+  }));
+  localStorage.setItem("tinMenu",JSON.stringify(menu));
+  render();
+  renderCostManager();
+  alert("Đã lưu Cost từng món.");
 }
 
 function showPrices(){
