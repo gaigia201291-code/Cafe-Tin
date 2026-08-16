@@ -21,7 +21,7 @@ button{border:0;border-radius:12px;padding:9px 14px;font-size:21px;background:#e
 .section{font-size:18px;font-weight:800;margin:20px 3px 8px}
 .history{font-size:14px}.history div{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0}
 .month{font-size:19px;font-weight:800}
-input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:right}
+select{width:100%;padding:6px;border:1px solid #ddd;border-radius:9px;background:#fff}input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:right}
 .note{font-size:12px;color:#7b857b;margin-top:8px}
 #pricesBox{display:none}
 
@@ -73,10 +73,10 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
     <button onclick="showAddItem()">➕ Thêm món</button>
   </div>
   <div id="pricesBox">
-    <div class="section">Chỉnh giá món</div>
+    <div class="section">Chỉnh giá bán & giá vốn</div>
     <div id="priceInputs"></div>
     <button style="width:100%;font-size:15px;margin-top:8px" onclick="savePrices()">Lưu giá</button>
-    <div class="note">Giá được lưu trên máy. Anh để các món mới ở mức 0đ để em tự nhập giá bán.</div>
+    <div class="note">Giá vốn dùng để tính lợi nhuận từng món/kênh. Có thể để 0 nếu chưa biết.</div>
   </div>
 </div>
 
@@ -109,6 +109,48 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
 <div class="card">
   <div class="month" id="monthTotal">0đ</div>
   <div class="note" id="monthCups">0 món</div>
+</div>
+
+
+<div class="section">🟢 GrabFood — nhập CSV & đối soát</div>
+<div class="card">
+  <div class="actions">
+    <button onclick="document.getElementById('grabFile').click()">📂 Nhập CSV Grab</button>
+    <button onclick="downloadGrabTemplate()">⬇️ Mẫu CSV</button>
+  </div>
+  <input id="grabFile" type="file" accept=".csv,text/csv" style="display:none" onchange="importGrabCSV(event)">
+  <div class="note">Không cần kết nối API Grab. Tải báo cáo CSV từ GrabMerchant rồi nhập vào đây. Lần đầu nếu tên cột khác mẫu, Cafe Tin sẽ cho chọn cột tương ứng.</div>
+
+  <div id="grabMappingBox" style="display:none;margin-top:12px">
+    <div class="section" style="font-size:16px;margin:0 0 8px">Ghép cột CSV Grab</div>
+    <div id="grabMapping"></div>
+    <button style="width:100%;font-size:15px;margin-top:8px" onclick="applyGrabMapping()">✅ Đọc dữ liệu</button>
+    <div class="note">Bắt buộc: Ngày, Tên món, Số lượng. Các cột doanh thu/phí có thể bỏ trống nếu file không có.</div>
+  </div>
+
+  <div id="grabSummary" style="margin-top:12px"></div>
+  <div id="grabItems" class="history" style="margin-top:10px"></div>
+  <div id="grabImportHistory" class="history" style="margin-top:10px"></div>
+</div>
+
+<div class="section">📈 So sánh Grab và bán tại quán</div>
+<div class="card">
+  <div class="row" style="padding:5px 0"><span class="name">GrabFood</span><strong id="compareGrabRevenue">0đ</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Tại quán</span><strong id="compareStoreRevenue">0đ</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Tổng doanh thu</span><strong id="compareTotalRevenue">0đ</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Tỷ trọng Grab</span><strong id="compareGrabShare">0%</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Biên lợi nhuận Grab</span><strong id="compareGrabMargin">0%</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Biên lợi nhuận tại quán</span><strong id="compareStoreMargin">0%</strong></div>
+  <hr>
+  <div class="row" style="padding:5px 0"><span class="name">Giá vốn Grab</span><strong id="compareGrabCost">0đ</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Lợi nhuận Grab</span><strong id="compareGrabProfit">0đ</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Giá vốn tại quán (ước tính)</span><strong id="compareStoreCost">0đ</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Lợi nhuận tại quán</span><strong id="compareStoreProfit">0đ</strong></div>
+  <div class="row" style="padding:5px 0"><span class="name">Tổng lợi nhuận</span><strong id="compareTotalProfit">0đ</strong></div>
+  <div class="note">Lợi nhuận theo kênh dùng giá vốn từng món. Nếu chưa nhập giá vốn, phần lợi nhuận sẽ chưa đầy đủ. Chi phí chung tháng vẫn được tính riêng ở mục Chi phí.</div>
+<div class="section" style="font-size:16px;margin-top:14px">💰 Lợi nhuận theo món</div>
+<div id="profitByItem" class="history"></div>
+<div class="note">Cost = giá vốn 1 món. Lợi nhuận Grab dùng số tiền thực nhận sau các khoản giảm trừ/phí có trong CSV. Tỷ suất lợi nhuận = lợi nhuận / tiền thực nhận.</div>
 </div>
 
 <div class="section">💸 Chi phí nguyên liệu & chi phí tháng</div>
@@ -153,22 +195,39 @@ input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:
 <div id="invoice"></div>
 <script>
 const defaultMenu=[
-["Cà phê đen",12000],["Cà phê sữa",15000],["Cà phê muối",17000],
-["Bạc xỉu",18000],["Mì trộn full topping",25000],["Sữa chua kem muối",17000],
-["Cacao latte",0],["Cacao latte kem muối",0],["Matcha latte",0],["Matcha latte kem muối",0]
+{name:"Cà phê đen",price:12000,cost:0},{name:"Cà phê sữa",price:15000,cost:0},{name:"Cà phê muối",price:17000,cost:0},
+{name:"Bạc xỉu",price:18000,cost:0},{name:"Mì trộn full topping",price:25000,cost:0},{name:"Sữa chua kem muối",price:17000,cost:0},
+{name:"Cacao latte",price:0,cost:0},{name:"Cacao latte kem muối",price:0,cost:0},{name:"Matcha latte",price:0,cost:0},{name:"Matcha latte kem muối",price:0,cost:0}
 ];
-let menu=JSON.parse(localStorage.getItem("tinMenu")||"null")||defaultMenu;
+let menuRaw=JSON.parse(localStorage.getItem("tinMenu")||"null");
+let menu=(Array.isArray(menuRaw)?menuRaw:defaultMenu).map(m=>{
+  if(Array.isArray(m)) return {name:m[0],price:Number(m[1])||0,cost:0};
+  return {name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0};
+});
 let history=JSON.parse(localStorage.getItem("tinHistory")||"{}");
 let counts=JSON.parse(localStorage.getItem("tinToday")||"{}");
 let actions=JSON.parse(localStorage.getItem("tinActions")||"[]");
 let expenses=JSON.parse(localStorage.getItem("tinExpenses")||"[]");
 let orders=JSON.parse(localStorage.getItem("tinOrders")||"[]");
 let orderCart=JSON.parse(localStorage.getItem("tinOrderCart")||"{}");
+let grabRows=JSON.parse(localStorage.getItem("tinGrabRows")||"[]");
+let grabRawHeaders=[];
+let grabRawRows=[];
+let grabPendingFileName="";
 const START_DATE="2026-08-18";
 
 function key(){return new Date().toISOString().slice(0,10)}
 function active(){return key()>=START_DATE}
-function save(){localStorage.setItem("tinToday",JSON.stringify(counts));localStorage.setItem("tinHistory",JSON.stringify(history));localStorage.setItem("tinActions",JSON.stringify(actions));localStorage.setItem("tinExpenses",JSON.stringify(expenses));localStorage.setItem("tinOrders",JSON.stringify(orders));localStorage.setItem("tinOrderCart",JSON.stringify(orderCart))}
+function save(){
+ localStorage.setItem("tinMenu",JSON.stringify(menu));
+ localStorage.setItem("tinToday",JSON.stringify(counts));
+ localStorage.setItem("tinHistory",JSON.stringify(history));
+ localStorage.setItem("tinActions",JSON.stringify(actions));
+ localStorage.setItem("tinExpenses",JSON.stringify(expenses));
+ localStorage.setItem("tinOrders",JSON.stringify(orders));
+ localStorage.setItem("tinOrderCart",JSON.stringify(orderCart));
+ localStorage.setItem("tinGrabRows",JSON.stringify(grabRows));
+}
 function money(n){return n.toLocaleString("vi-VN")+"đ"}
 function render(){
  const d=new Date();
@@ -177,16 +236,16 @@ function render(){
    : "Chưa bắt đầu bán • Bắt đầu từ Thứ Ba 18/08/2026";
  document.getElementById("items").innerHTML=menu.map((m,i)=>`
  <div class="card"><div class="row">
- <div class="name">${m[0]}<div class="price">${money(m[1])}</div></div>
+ <div class="name">${m.name}<div class="price">${money(m.price)}</div></div>
  <button onclick="changeOrder(${i},-1)">−</button>
  <div class="count">${orderCart[i]||0}</div>
  <button onclick="changeOrder(${i},1)">+</button>
  </div></div>`).join("");
  let cups=0,total=0;
- menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m[1]});
+ menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m.price});
  document.getElementById("cups").textContent=cups;
  document.getElementById("money").textContent=money(total);
- renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses();
+ renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports();
 }
 
 function toggleOrder(){
@@ -207,15 +266,15 @@ function renderOrder(){
   menu.forEach((m,i)=>{
     const q=orderCart[i]||0;
     if(q){
-      const line=q*m[1]; total+=line;
-      out+=`<div class="order-item"><span class="name">${m[0]}</span><span>${q} × ${money(m[1])}</span><strong>${money(line)}</strong></div>`;
+      const line=q*m.price; total+=line;
+      out+=`<div class="order-item"><span class="name">${m.name}</span><span>${q} × ${money(m.price)}</span><strong>${money(line)}</strong></div>`;
     }
   });
   document.getElementById("orderItems").innerHTML=out||'<div class="note">Chưa chọn món.</div>';
   document.getElementById("orderTotal").textContent=money(total);
 }
 function orderItems(){
-  return menu.map((m,i)=>({name:m[0],qty:orderCart[i]||0,price:Number(m[1])||0})).filter(x=>x.qty>0);
+  return menu.map((m,i)=>({name:m.name,qty:orderCart[i]||0,price:Number(m.price)||0,cost:Number(m.cost)||0})).filter(x=>x.qty>0);
 }
 function checkoutOrder(){
   const items=orderItems();
@@ -224,7 +283,7 @@ function checkoutOrder(){
   const order={id:Date.now(),date:key(),time:now.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}),items,total};
   orders.push(order);
   items.forEach(x=>{
-    const idx=menu.findIndex(m=>m[0]===x.name);
+    const idx=menu.findIndex(m=>m.name===x.name);
     if(idx>=0) counts[idx]=(counts[idx]||0)+x.qty;
   });
   history[key()]=calc();
@@ -269,16 +328,95 @@ function undo(){
  history[key()]=calc(); save(); render();
 }
 function calc(){
- let cups=0,total=0;
- menu.forEach((m,i)=>{cups+=counts[i]||0;total+=(counts[i]||0)*m[1]});
- return {cups,total};
+ let cups=0,total=0,cost=0;
+ menu.forEach((m,i)=>{
+   const q=Number(counts[i]||0);
+   cups+=q;
+   total+=q*(Number(m.price)||0);
+   cost+=q*(Number(m.cost)||0);
+ });
+ return {cups,total,cost,profit:total-cost};
 }
 function renderHistory(){
  const keys=Object.keys(history).filter(k=>k>=START_DATE).sort().reverse();
  document.getElementById("history").innerHTML=keys.length?keys.map(k=>{
-   const x=history[k]; return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</span><strong>${money(x.total)} • ${x.cups} món</strong></div>`
+   const x=history[k]; return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</span><strong>${money(x.total)} • ${x.cups} món${x.cost!=null?" • Lãi "+money((Number(x.profit)!=null?Number(x.profit):Number(x.total)-Number(x.cost||0))):""}</strong></div>`
  }).join(""):"Chưa có dữ liệu.";
 }
+
+function grabForDate(date){
+  const rows=grabRows.filter(x=>x.date===date);
+  return {
+    rows,
+    qty:rows.reduce((s,x)=>s+numVal(x.qty),0),
+    gross:rows.reduce((s,x)=>s+numVal(x.gross),0),
+    discount:rows.reduce((s,x)=>s+numVal(x.discount),0),
+    fee:rows.reduce((s,x)=>s+numVal(x.fee),0),
+    net:rows.reduce((s,x)=>s+numVal(x.net),0)
+  };
+}
+function grabCostForRows(rows){
+  let cost=0;
+  rows.forEach(x=>{
+    const m=menu.find(m=>norm(m.name)===norm(x.item));
+    if(m) cost+=numVal(x.qty)*(Number(m.cost)||0);
+  });
+  return cost;
+}
+function expensesForDate(date){
+  return expenses.filter(x=>x.date===date).reduce((s,x)=>s+(Number(x.amount)||0),0);
+}
+function monthlyStoreStats(ym){
+  let revenue=0,cost=0,qty=0;
+  Object.entries(history).forEach(([d,v])=>{
+    if(d>=START_DATE&&d.startsWith(ym)){
+      revenue+=Number(v.total)||0;
+      qty+=Number(v.cups)||0;
+      cost+=Number(v.cost)||0;
+    }
+  });
+  return {revenue,cost,qty,profit:revenue-cost};
+}
+function monthlyGrabStats(ym){
+  const rows=grabRows.filter(x=>x.date&&x.date.startsWith(ym));
+  const net=rows.reduce((s,x)=>s+numVal(x.net),0);
+  const cost=grabCostForRows(rows);
+  return {net,cost,qty:rows.reduce((s,x)=>s+numVal(x.qty),0),profit:net-cost};
+}
+function monthlyOtherExpenses(ym){
+  return expenses.filter(x=>x.date&&x.date.startsWith(ym)).reduce((s,x)=>s+(Number(x.amount)||0),0);
+}
+function renderProfitReports(){
+  const d=key(), ym=d.slice(0,7);
+  const dayStore=history[d]||{total:0,cost:0};
+  const dayGrab=grabForDate(d), dayGrabCost=grabCostForRows(dayGrab.rows);
+  const dayExpenses=expensesForDate(d);
+  const dayRevenue=(Number(dayStore.total)||0)+dayGrab.net;
+  const dayCost=(Number(dayStore.cost)||0)+dayGrabCost;
+  const dayProfit=dayRevenue-dayCost-dayExpenses;
+  document.getElementById("dailyStoreRevenue").textContent=money(Number(dayStore.total)||0);
+  document.getElementById("dailyGrabRevenue").textContent=money(dayGrab.net);
+  document.getElementById("dailyTotalRevenue").textContent=money(dayRevenue);
+  document.getElementById("dailyStoreCost").textContent=money(Number(dayStore.cost)||0);
+  document.getElementById("dailyGrabCost").textContent=money(dayGrabCost);
+  document.getElementById("dailyTotalCost").textContent=money(dayCost);
+  document.getElementById("dailyExpenses").textContent=money(dayExpenses);
+  document.getElementById("dailyProfit").textContent=money(dayProfit);
+  document.getElementById("dailyMargin").textContent=(dayRevenue?(dayProfit/dayRevenue*100):0).toFixed(1)+"%";
+
+  const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym), me=monthlyOtherExpenses(ym);
+  const mr=ms.revenue+mg.net, mc=ms.cost+mg.cost, mp=mr-mc-me;
+  document.getElementById("monthStoreRevenue").textContent=money(ms.revenue);
+  document.getElementById("monthGrabRevenue").textContent=money(mg.net);
+  document.getElementById("monthRevenueFull").textContent=money(mr);
+  document.getElementById("monthStoreCost").textContent=money(ms.cost);
+  document.getElementById("monthGrabCost").textContent=money(mg.cost);
+  document.getElementById("monthCostFull").textContent=money(mc);
+  document.getElementById("monthExpensesFull").textContent=money(me);
+  document.getElementById("monthProfitFull").textContent=money(mp);
+  document.getElementById("monthMarginFull").textContent=(mr?(mp/mr*100):0).toFixed(1)+"%";
+}
+
 function renderMonth(){
  const ym=key().slice(0,7);let total=0,cups=0;
  Object.entries(history).forEach(([k,v])=>{if(k>=START_DATE && k.startsWith(ym)){total+=v.total;cups+=v.cups}});
@@ -338,7 +476,7 @@ function addItem(){
   const price=Math.max(0,Number(document.getElementById("newItemPrice").value)||0);
   if(!name){alert("Em nhập tên món nhé.");return}
   if(!price){alert("Em nhập giá bán nhé.");return}
-  menu.push([name,price]);
+  menu.push({name,price,cost:0});
   localStorage.setItem("tinMenu",JSON.stringify(menu));
   document.getElementById("newItemName").value="";
   document.getElementById("newItemPrice").value="";
@@ -350,27 +488,245 @@ function addItem(){
 function showPrices(){
  const box=document.getElementById("pricesBox");box.style.display=box.style.display==="none"?"block":"none";
  document.getElementById("priceInputs").innerHTML=menu.map((m,i)=>`
- <div class="row" style="padding:5px 0"><span class="name">${m[0]}</span><input id="p${i}" type="number" value="${m[1]}"></div>`).join("");
+ <div style="padding:7px 0;border-bottom:1px solid #eee">
+   <div class="name">${m.name}</div>
+   <div class="row" style="margin-top:5px">
+     <span style="font-size:12px;flex:1">Giá bán</span><input id="p${i}" type="number" value="${m.price}">
+     <span style="font-size:12px;flex:1">Giá vốn</span><input id="c${i}" type="number" value="${m.cost||0}">
+   </div>
+ </div>`).join("");
 }
 function savePrices(){
- menu=menu.map((m,i)=>[m[0],Math.max(0,Number(document.getElementById("p"+i).value)||0)]);
+ menu=menu.map((m,i)=>({
+   name:m.name,
+   price:Math.max(0,Number(document.getElementById("p"+i).value)||0),
+   cost:Math.max(0,Number(document.getElementById("c"+i).value)||0)
+ }));
  localStorage.setItem("tinMenu",JSON.stringify(menu));
  render(); alert("Đã lưu giá món.");
 }
 function newDay(){
  if(!confirm("Xóa số liệu hôm nay? Lịch sử các ngày trước vẫn giữ nguyên."))return;
- counts={};actions=[];orderCart={};history[key()]={cups:0,total:0};save();render();
+ counts={};actions=[];orderCart={};history[key()]={cups:0,total:0,cost:0,profit:0};save();render();
+}
+
+
+// ===== GRABFOOD CSV =====
+let grabColumnMap={date:"",item:"",qty:"",gross:"",discount:"",fee:"",net:""};
+
+function csvParse(text){
+  text=text.replace(/^\uFEFF/,"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  const lines=text.split("\n").filter(x=>x.trim()!=="");
+  if(!lines.length)return {headers:[],rows:[]};
+  const delimiter=(lines[0].split(";").length>lines[0].split(",").length)?";":",";
+  function parseLine(line){
+    const out=[];let cur="",q=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){
+        if(q && line[i+1]==='"'){cur+='"';i++} else q=!q;
+      }else if(ch===delimiter && !q){out.push(cur.trim());cur=""}
+      else cur+=ch;
+    }
+    out.push(cur.trim()); return out;
+  }
+  const headers=parseLine(lines[0]);
+  const rows=lines.slice(1).map(line=>{
+    const a=parseLine(line),o={};headers.forEach((h,i)=>o[h]=(a[i]??"").trim());return o;
+  });
+  return {headers,rows};
+}
+function norm(s){
+  return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d")
+    .replace(/[^a-z0-9]+/g," ").trim();
+}
+function findHeader(headers,keys){
+  return headers.find(h=>keys.some(k=>norm(h).includes(norm(k))))||"";
+}
+function autoMap(headers){
+  return {
+    date:findHeader(headers,["date","ngay","order date","transaction date","datetime"]),
+    item:findHeader(headers,["item","mon","product","dish","menu item","item name","ten mon"]),
+    qty:findHeader(headers,["qty","quantity","so luong","quantity sold","units"]),
+    gross:findHeader(headers,["gross sales","gross","doanh thu gop","sales","item total","subtotal"]),
+    discount:findHeader(headers,["discount","giam gia","promotion","promo"]),
+    fee:findHeader(headers,["grab fee","platform fee","commission","service fee","phi grab","phi"]),
+    net:findHeader(headers,["net total","net sales","net","thuc nhan","net amount"])
+  };
+}
+function numVal(v){
+  if(v===null||v===undefined||v==="")return 0;
+  let s=String(v).replace(/\s/g,"").replace(/[₫đ]/gi,"");
+  if(s.includes(",") && s.includes(".")){
+    if(s.lastIndexOf(",")>s.lastIndexOf(".")) s=s.replace(/\./g,"").replace(",",".");
+    else s=s.replace(/,/g,"");
+  }else if(s.includes(",")){
+    const parts=s.split(",");
+    s=parts.length===2 && parts[1].length<=2 ? s.replace(",",".") : s.replace(/,/g,"");
+  }
+  s=s.replace(/[^\d.-]/g,"");
+  return Number(s)||0;
+}
+function dateKey(v){
+  if(!v)return key();
+  const s=String(v).trim();
+  let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if(m)return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
+  m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if(m)return `${m[3]}-${String(m[2]).padStart(2,"0")}-${String(m[1]).padStart(2,"0")}`;
+  const d=new Date(s); return isNaN(d)?key():d.toISOString().slice(0,10);
+}
+function renderGrabMapping(){
+  const labels={date:"Ngày *",item:"Tên món *",qty:"Số lượng *",gross:"Doanh thu món",discount:"Giảm giá/khuyến mãi",fee:"Phí Grab",net:"Net/Thực nhận"};
+  const options=(sel)=>`<option value="">— Không dùng —</option>`+grabRawHeaders.map(h=>`<option value="${h.replace(/"/g,"&quot;")}" ${h===sel?"selected":""}>${h}</option>`).join("");
+  document.getElementById("grabMapping").innerHTML=Object.keys(labels).map(k=>
+    `<div style="margin-bottom:7px"><label style="font-size:13px">${labels[k]}</label>
+      <select id="gm_${k}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:9px">${options(grabColumnMap[k])}</select></div>`
+  ).join("");
+}
+function importGrabCSV(event){
+  const file=event.target.files && event.target.files[0]; if(!file)return;
+  grabPendingFileName=file.name;
+  const reader=new FileReader();
+  reader.onload=()=>{try{
+    const parsed=csvParse(reader.result);
+    if(!parsed.headers.length)throw new Error("CSV trống");
+    grabRawHeaders=parsed.headers; grabRawRows=parsed.rows; grabColumnMap=autoMap(parsed.headers);
+    renderGrabMapping();
+    document.getElementById("grabMappingBox").style.display="block";
+  }catch(e){alert("Không đọc được CSV. Hãy kiểm tra file.");}
+  finally{event.target.value="";}};
+  reader.readAsText(file,"UTF-8");
+}
+function applyGrabMapping(){
+  const keys=["date","item","qty","gross","discount","fee","net"];
+  keys.forEach(k=>grabColumnMap[k]=document.getElementById("gm_"+k).value);
+  if(!grabColumnMap.date||!grabColumnMap.item||!grabColumnMap.qty){
+    alert("Cần chọn đủ Ngày, Tên món và Số lượng.");return;
+  }
+  const imported=[];
+  grabRawRows.forEach(r=>{
+    const item=String(r[grabColumnMap.item]||"").trim();
+    const qty=numVal(r[grabColumnMap.qty]);
+    if(!item||qty<=0)return;
+    const gross=grabColumnMap.gross?numVal(r[grabColumnMap.gross]):0;
+    const discount=grabColumnMap.discount?numVal(r[grabColumnMap.discount]):0;
+    const fee=grabColumnMap.fee?numVal(r[grabColumnMap.fee]):0;
+    const net=grabColumnMap.net?numVal(r[grabColumnMap.net]):Math.max(0,gross-discount-fee);
+    imported.push({id:Date.now()+imported.length,date:dateKey(r[grabColumnMap.date]),item,qty,gross,discount,fee,net,source:grabPendingFileName});
+  });
+  if(!imported.length){alert("Không tìm thấy dòng dữ liệu hợp lệ.");return;}
+  // Replace previous import with the same source file name to prevent accidental double counting.
+  grabRows=grabRows.filter(x=>x.source!==grabPendingFileName);
+  grabRows.push(...imported);
+  save(); document.getElementById("grabMappingBox").style.display="none"; render(); 
+  alert(`Đã nhập ${imported.length} dòng từ ${grabPendingFileName}.`);
+}
+function grabTotals(){
+  const ym=key().slice(0,7);
+  const rows=grabRows.filter(x=>x.date&&x.date.startsWith(ym));
+  return {
+    rows,
+    qty:rows.reduce((s,x)=>s+numVal(x.qty),0),
+    gross:rows.reduce((s,x)=>s+numVal(x.gross),0),
+    discount:rows.reduce((s,x)=>s+numVal(x.discount),0),
+    fee:rows.reduce((s,x)=>s+numVal(x.fee),0),
+    net:rows.reduce((s,x)=>s+numVal(x.net),0)
+  };
+}
+function storeTotals(){
+  const ym=key().slice(0,7); let revenue=0,qty=0,cost=0;
+  Object.entries(history).forEach(([d,v])=>{
+    if(d>=START_DATE&&d.startsWith(ym)){revenue+=numVal(v.total);qty+=numVal(v.cups);}
+  });
+  Object.entries(counts).forEach(([i,q])=>{
+    const item=menu[Number(i)]; if(item) cost+=numVal(q)*(item.cost||0);
+  });
+  return {revenue,qty,cost,profit:revenue-cost};
+}
+function grabProfit(){
+  const t=grabTotals(); let cost=0;
+  const byName={};
+  t.rows.forEach(x=>{
+    const m=menu.find(m=>norm(m.name)===norm(x.item));
+    if(m)cost+=numVal(x.qty)*(m.cost||0);
+  });
+  return {profit:t.net-cost,cost};
+}
+
+function renderProfitByItem(){
+  const t=grabTotals(), map={};
+  t.rows.forEach(x=>{
+    if(!map[x.item]) map[x.item]={qty:0,net:0};
+    map[x.item].qty+=numVal(x.qty); map[x.item].net+=numVal(x.net);
+  });
+  const names=Object.keys(map).sort((a,b)=>map[b].qty-map[a].qty);
+  if(!names.length){document.getElementById("profitByItem").innerHTML="Chưa có dữ liệu Grab để tính lợi nhuận.";return;}
+  document.getElementById("profitByItem").innerHTML=names.map(name=>{
+    const m=menu.find(m=>norm(m.name)===norm(name)), cost=m?Number(m.cost)||0:0;
+    const costTotal=map[name].qty*cost, profit=map[name].net-costTotal;
+    const margin=map[name].net?(profit/map[name].net*100):0;
+    return `<div style="padding:8px 0;border-bottom:1px solid #eee">
+      <div class="row"><span class="name"><strong>${name}</strong></span><strong>${map[name].qty} món</strong></div>
+      <div style="font-size:12px;margin-top:3px">Thực nhận: ${money(map[name].net)} • Cost: ${money(costTotal)} (${money(cost)}/món)</div>
+      <div style="font-size:13px;margin-top:3px"><strong>Lãi: ${money(profit)}</strong> • Biên: <strong>${margin.toFixed(1)}%</strong></div>
+    </div>`;
+  }).join("");
+}
+
+function renderGrab(){
+  const t=grabTotals(), gp=grabProfit(), st=storeTotals();
+  const totalRev=t.net+st.revenue, totalProfit=gp.profit+st.profit;
+  document.getElementById("grabSummary").innerHTML=
+    `<div><strong>${t.rows.length}</strong> dòng Grab trong tháng</div>
+     <div style="margin-top:5px"><strong>${t.qty}</strong> món • Doanh thu/Thực nhận: <strong>${money(t.net)}</strong></div>
+     <div style="margin-top:5px">Doanh thu món: ${money(t.gross)} • Giảm giá: ${money(t.discount)} • Phí Grab: ${money(t.fee)}</div>
+     <div style="margin-top:5px">Giá vốn ước tính: ${money(gp.cost)} • <strong>Lợi nhuận Grab: ${money(gp.profit)}</strong></div>`;
+  const map={};
+  t.rows.forEach(x=>{
+    const k=x.item; if(!map[k])map[k]={qty:0,net:0};
+    map[k].qty+=numVal(x.qty);map[k].net+=numVal(x.net);
+  });
+  const names=Object.keys(map).sort((a,b)=>map[b].qty-map[a].qty);
+  document.getElementById("grabItems").innerHTML=names.length?
+    `<div class="section" style="font-size:16px;margin:0 0 5px">Món bán trên Grab</div>`+
+    names.map(n=>`<div><span>${n}</span><strong>${map[n].qty} món • ${money(map[n].net)}</strong></div>`).join("")
+    :"Chưa có dữ liệu Grab tháng này.";
+  const sources=[...new Set(grabRows.map(x=>x.source).filter(Boolean))];
+  document.getElementById("grabImportHistory").innerHTML=sources.length?
+    `<div class="note">File đã nhập: ${sources.join(" • ")}</div>`:"";
+  document.getElementById("compareGrabRevenue").textContent=money(t.net);
+  document.getElementById("compareStoreRevenue").textContent=money(st.revenue);
+  document.getElementById("compareTotalRevenue").textContent=money(totalRev);
+  document.getElementById("compareGrabShare").textContent=(totalRev?((t.net/totalRev)*100).toFixed(1):"0")+"%";
+  document.getElementById("compareGrabMargin").textContent=(t.net?(gp.profit/t.net*100):0).toFixed(1)+"%";
+  document.getElementById("compareStoreMargin").textContent=(st.revenue?(st.profit/st.revenue*100):0).toFixed(1)+"%";
+  document.getElementById("compareGrabCost").textContent=money(gp.cost);
+  document.getElementById("compareGrabProfit").textContent=money(gp.profit);
+  document.getElementById("compareStoreCost").textContent=money(st.cost);
+  document.getElementById("compareStoreProfit").textContent=money(st.profit);
+  document.getElementById("compareTotalProfit").textContent=money(totalProfit);
+  renderProfitByItem();
+}
+function downloadGrabTemplate(){
+  const csv="Ngày,Tên món,Số lượng,Doanh thu món,Giảm giá/khuyến mãi,Phí Grab,Net/Thực nhận\n2026-08-18,Cà phê sữa,2,30000,0,6000,24000\n";
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mau-import-grab-cafe-tin.csv";
+  document.body.appendChild(a);a.click();a.remove();
 }
 
 function backupData(){
   const data={
-    version:1,
+    version:2,
     exportedAt:new Date().toISOString(),
     tinMenu:menu,
     tinHistory:history,
     tinToday:counts,
     tinActions:actions,
-    tinExpenses:expenses
+    tinExpenses:expenses,
+    tinOrders:orders,
+    tinOrderCart:orderCart,
+    tinGrabRows:grabRows
   };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);
@@ -405,6 +761,10 @@ function restoreData(event){
       counts=data.tinToday||{};
       actions=data.tinActions||[];
       expenses=data.tinExpenses||[];
+      orders=data.tinOrders||[];
+      orderCart=data.tinOrderCart||{};
+      grabRows=data.tinGrabRows||[];
+      menu=(Array.isArray(menu)?menu:[]).map(m=>Array.isArray(m)?{name:m[0],price:Number(m[1])||0,cost:0}:{name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0});
       localStorage.setItem("tinMenu",JSON.stringify(menu));
       save();
       render();
