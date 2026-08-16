@@ -213,6 +213,17 @@ let menu=(Array.isArray(menuRaw)?menuRaw:defaultMenu).map(m=>{
   if(Array.isArray(m)) return {name:m[0],price:Number(m[1])||0,cost:0};
   return {name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0};
 });
+// Cost được lưu riêng theo TÊN MÓN để không bị mất khi menu thay đổi thứ tự/thêm món.
+let savedCosts={};
+try{
+  savedCosts=JSON.parse(localStorage.getItem("tinCosts")||"{}");
+  if(!savedCosts || typeof savedCosts!=="object" || Array.isArray(savedCosts)) savedCosts={};
+}catch(e){savedCosts={};}
+menu=menu.map(m=>{
+  const k=String(m.name||"").trim();
+  const saved=savedCosts[k];
+  return {...m, cost:Number.isFinite(Number(saved)) ? Math.max(0,Number(saved)) : Math.max(0,Number(m.cost)||0)};
+});
 let history=JSON.parse(localStorage.getItem("tinHistory")||"{}");
 let counts=JSON.parse(localStorage.getItem("tinToday")||"{}");
 let actions=JSON.parse(localStorage.getItem("tinActions")||"[]");
@@ -229,6 +240,9 @@ function key(){return new Date().toISOString().slice(0,10)}
 function active(){return key()>=START_DATE}
 function save(){
  localStorage.setItem("tinMenu",JSON.stringify(menu));
+ const costs={};
+ menu.forEach(m=>{costs[String(m.name||"").trim()]=Math.max(0,Number(m.cost)||0)});
+ localStorage.setItem("tinCosts",JSON.stringify(costs));
  localStorage.setItem("tinToday",JSON.stringify(counts));
  localStorage.setItem("tinHistory",JSON.stringify(history));
  localStorage.setItem("tinActions",JSON.stringify(actions));
@@ -252,6 +266,8 @@ function render(){
  </div></div>`).join("");
  let cups=0,total=0;
  menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m.price});
+ const todayGrabQty=grabRows.filter(x=>x.date===key()).reduce((s,x)=>s+numVal(x.qty),0);
+ cups+=todayGrabQty;
  document.getElementById("cups").textContent=cups;
  document.getElementById("money").textContent=money(total);
  renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports(); renderCostManager();
@@ -349,7 +365,7 @@ function calc(){
 function renderHistory(){
  const keys=Object.keys(history).filter(k=>k>=START_DATE).sort().reverse();
  document.getElementById("history").innerHTML=keys.length?keys.map(k=>{
-   const x=history[k]; return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</span><strong>${money(x.total)} • ${x.cups} món${x.cost!=null?" • Lãi "+money((Number(x.profit)!=null?Number(x.profit):Number(x.total)-Number(x.cost||0))):""}</strong></div>`
+   const x=history[k]; const gq=grabForDate(k).qty; const combinedQty=(Number(x.cups)||0)+gq; return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</span><strong>${money(x.total)} • ${combinedQty} món${x.cost!=null?" • Lãi "+money((Number(x.profit)!=null?Number(x.profit):Number(x.total)-Number(x.cost||0))):""}</strong></div>`
  }).join(""):"Chưa có dữ liệu.";
 }
 
@@ -385,6 +401,11 @@ function monthlyStoreStats(ym){
     }
   });
   return {revenue,cost,qty,profit:revenue-cost};
+}
+function monthlyCombinedQty(ym){
+  const storeQty=monthlyStoreStats(ym).qty;
+  const grabQty=grabRows.filter(x=>x.date&&x.date.startsWith(ym)).reduce((s,x)=>s+numVal(x.qty),0);
+  return storeQty+grabQty;
 }
 function monthlyGrabStats(ym){
   const rows=grabRows.filter(x=>x.date&&x.date.startsWith(ym));
@@ -429,6 +450,7 @@ function renderProfitReports(){
 function renderMonth(){
  const ym=key().slice(0,7);let total=0,cups=0;
  Object.entries(history).forEach(([k,v])=>{if(k>=START_DATE && k.startsWith(ym)){total+=v.total;cups+=v.cups}});
+ cups+=grabRows.filter(x=>x.date&&x.date.startsWith(ym)).reduce((s,x)=>s+numVal(x.qty),0);
  document.getElementById("monthTotal").textContent=money(total);
  document.getElementById("monthCups").textContent=cups+" món trong tháng";
 }
@@ -487,7 +509,7 @@ function addItem(){
   if(!name){alert("Em nhập tên món nhé.");return}
   if(!price){alert("Em nhập giá bán nhé.");return}
   menu.push({name,price,cost});
-  localStorage.setItem("tinMenu",JSON.stringify(menu));
+  save();
   document.getElementById("newItemName").value="";
   document.getElementById("newItemPrice").value="";
   document.getElementById("newItemCost").value="";
@@ -519,15 +541,19 @@ function renderCostManager(){
   }).join("");
 }
 function saveCostManager(){
-  menu=menu.map((m,i)=>({
-    name:m.name,
-    price:Number(m.price)||0,
-    cost:Math.max(0,Number(document.getElementById("cm"+i)?.value)||0)
-  }));
-  localStorage.setItem("tinMenu",JSON.stringify(menu));
+  let changed=0;
+  menu=menu.map((m,i)=>{
+    const el=document.getElementById("cm"+i);
+    const raw=el ? String(el.value).trim() : "";
+    // Không để ô trống vô tình biến Cost thành 0.
+    const cost=raw==="" ? Math.max(0,Number(m.cost)||0) : Math.max(0,Number(raw)||0);
+    if(el && raw!=="" && Number.isFinite(Number(raw))) changed++;
+    return {name:String(m.name||"").trim(),price:Math.max(0,Number(m.price)||0),cost};
+  });
+  // Lưu cả menu và bảng Cost riêng, sau đó dùng cùng một hàm save() để tránh ghi đè dữ liệu.
+  save();
   render();
-  renderCostManager();
-  alert("Đã lưu Cost từng món.");
+  alert("Đã lưu Cost từng món" + (changed ? " thành công." : "."));
 }
 
 function showPrices(){
@@ -547,7 +573,7 @@ function savePrices(){
    price:Math.max(0,Number(document.getElementById("p"+i).value)||0),
    cost:Math.max(0,Number(document.getElementById("c"+i).value)||0)
  }));
- localStorage.setItem("tinMenu",JSON.stringify(menu));
+ save();
  render(); alert("Đã lưu giá món.");
 }
 function newDay(){
@@ -762,9 +788,10 @@ function downloadGrabTemplate(){
 
 function backupData(){
   const data={
-    version:2,
+    version:3,
     exportedAt:new Date().toISOString(),
     tinMenu:menu,
+    tinCosts:Object.fromEntries(menu.map(m=>[String(m.name||"").trim(),Math.max(0,Number(m.cost)||0)])),
     tinHistory:history,
     tinToday:counts,
     tinActions:actions,
@@ -809,8 +836,13 @@ function restoreData(event){
       orders=data.tinOrders||[];
       orderCart=data.tinOrderCart||{};
       grabRows=data.tinGrabRows||[];
+      savedCosts=(data.tinCosts && typeof data.tinCosts==="object") ? data.tinCosts : {};
       menu=(Array.isArray(menu)?menu:[]).map(m=>Array.isArray(m)?{name:m[0],price:Number(m[1])||0,cost:0}:{name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0});
-      localStorage.setItem("tinMenu",JSON.stringify(menu));
+      menu=menu.map(m=>{
+        const k=String(m.name||"").trim();
+        const c=Number(m.cost);
+        return {...m,cost:Number.isFinite(c)?Math.max(0,c):0};
+      });
       save();
       render();
       alert("Đã khôi phục dữ liệu thành công.");
