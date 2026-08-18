@@ -326,11 +326,47 @@ function renderTodayOrderStats(){
   document.getElementById("todayRevenue").textContent=money(revenue);
   document.getElementById("todayItems").textContent=items+" món đã chốt";
 }
+function deleteOrder(id){
+  const order=orders.find(o=>String(o.id)===String(id));
+  if(!order)return;
+  if(!confirm(`Xóa order #${String(order.id).slice(-6)}?\nDoanh thu và số món của order này sẽ được trừ lại.`))return;
+
+  // Trừ lại số lượng món mà order này đã cộng vào thống kê.
+  order.items.forEach(x=>{
+    const idx=menu.findIndex(m=>m.name===x.name);
+    if(idx>=0) counts[idx]=Math.max(0,(Number(counts[idx])||0)-(Number(x.qty)||0));
+  });
+
+  orders=orders.filter(o=>String(o.id)!==String(id));
+
+  // Cập nhật lại lịch sử ngày của order sau khi xóa.
+  const day=order.date;
+  const remaining=orders.filter(o=>o.date===day);
+  if(day===key()){
+    history[day]=calc();
+  }else{
+    // Giữ đúng dữ liệu lịch sử của ngày cũ theo các order còn lại,
+    // nhưng không làm mất các lượt bán nhập thủ công trong ngày đó.
+    // Với ngày hiện tại, counts là nguồn chính nên đã được cập nhật ở trên.
+    if(remaining.length){
+      const revenue=remaining.reduce((s,o)=>s+(Number(o.total)||0),0);
+      const items=remaining.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0),0),0);
+      const cost=remaining.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.cost)||0),0),0);
+      const h=history[day]||{cups:0,total:0,cost:0,profit:0};
+      history[day]={cups:Math.max(0,(Number(h.cups)||0)-items),total:Math.max(0,(Number(h.total)||0)-revenue),cost:Math.max(0,(Number(h.cost)||0)-cost)};
+      history[day].profit=history[day].total-history[day].cost;
+    }
+  }
+
+  save();
+  render();
+} 
+
 function renderOrderHistory(){
   const list=todayOrders().slice().reverse();
   document.getElementById("orderHistory").innerHTML=list.length?list.map(o=>{
     const text=o.items.map(x=>`${x.name} × ${x.qty}`).join(", ");
-    return `<div><span>#${String(o.id).slice(-6)} • ${o.time}<br><small>${text}</small></span><strong>${money(o.total)}<br><button onclick='printOrder(${JSON.stringify(o)})' style="font-size:12px;padding:4px 7px">🖨️ In lại</button></strong></div>`;
+    return `<div><span>#${String(o.id).slice(-6)} • ${o.time}<br><small>${text}</small></span><strong>${money(o.total)}<br><button onclick='printOrder(${JSON.stringify(o)})' style="font-size:12px;padding:4px 7px">🖨️ In lại</button> <button onclick='deleteOrder(${JSON.stringify(o.id)})' style="font-size:12px;padding:4px 7px">🗑️ Xóa</button></strong></div>`;
   }).join(""):"Chưa có order hôm nay.";
 }
 function printOrder(order){
