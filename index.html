@@ -231,6 +231,7 @@ let actions=JSON.parse(localStorage.getItem("tinActions")||"[]");
 // Từ đây doanh thu bán tại quầy được tách riêng theo từng ngày, kể cả khi
 // người dùng không bấm "Sang ngày mới" đúng lúc qua 0h.
 let currentBusinessDate=localStorage.getItem("tinCurrentBusinessDate")||key();
+let dailyV2=localStorage.getItem("tinDailyV2")==="1";
 let expenses=JSON.parse(localStorage.getItem("tinExpenses")||"[]");
 let orders=JSON.parse(localStorage.getItem("tinOrders")||"[]");
 let orderCart=JSON.parse(localStorage.getItem("tinOrderCart")||"{}");
@@ -249,6 +250,7 @@ function save(){
  localStorage.setItem("tinCosts",JSON.stringify(costs));
  localStorage.setItem("tinToday",JSON.stringify(counts));
  localStorage.setItem("tinCurrentBusinessDate",currentBusinessDate);
+ localStorage.setItem("tinDailyV2","1");
  localStorage.setItem("tinHistory",JSON.stringify(history));
  localStorage.setItem("tinActions",JSON.stringify(actions));
  localStorage.setItem("tinExpenses",JSON.stringify(expenses));
@@ -258,6 +260,7 @@ function save(){
 }
 function money(n){return n.toLocaleString("vi-VN")+"đ"}
 function render(){
+ migrateDailyData();
  ensureBusinessDay();
  const d=new Date();
  document.getElementById("today").textContent=active()
@@ -408,6 +411,31 @@ function calc(){
  return {cups,total,cost,profit:total-cost};
 }
 
+// Khởi tạo sổ doanh thu theo ngày, đồng thời xử lý dữ liệu cũ bị cộng dồn.
+// Nếu counts cũ là tổng nhiều ngày và history đã có các ngày trước, trừ phần lịch sử cũ
+// ở cấp tổng để phần "hôm nay" không tiếp tục cộng dồn.
+function migrateDailyData(){
+ if(dailyV2) return;
+ const today=key();
+ const prior=Object.entries(history).filter(([d])=>d<today && d>=START_DATE);
+ if(prior.length){
+   const old=calc();
+   const prev=prior.reduce((a,[d,v])=>({cups:a.cups+(Number(v.cups)||0),total:a.total+(Number(v.total)||0),cost:a.cost+(Number(v.cost)||0)}),{cups:0,total:0,cost:0});
+   const hasTodayHistory=history[today] && (Number(history[today].cups)||0)>0;
+   if(!hasTodayHistory){
+     history[today]={
+       cups:Math.max(0,old.cups-prev.cups),
+       total:Math.max(0,old.total-prev.total),
+       cost:Math.max(0,old.cost-prev.cost),
+       profit:Math.max(0,old.total-prev.total)-Math.max(0,old.cost-prev.cost)
+     };
+   }
+ }
+ currentBusinessDate=today;
+ dailyV2=true;
+ save();
+}
+
 // Tự động chốt dữ liệu quầy khi sang ngày mới.
 // Như vậy doanh thu ngày 18/08 sẽ không bị cộng dồn sang 19/08.
 function ensureBusinessDay(){
@@ -424,11 +452,6 @@ function ensureBusinessDay(){
 }
 
 function renderHistory(){
- // Luôn đồng bộ ngày hiện tại từ bộ đếm trước khi hiển thị lịch sử.
- const today=key();
- if(currentBusinessDate===today){
-   history[today]=calc();
- }
  const keys=new Set(Object.keys(history).filter(k=>k>=START_DATE));
  orders.forEach(o=>{if(o.date&&o.date>=START_DATE)keys.add(o.date);});
  grabRows.forEach(x=>{if(x.date&&x.date>=START_DATE)keys.add(x.date);});
@@ -504,8 +527,6 @@ function monthlyOtherExpenses(ym){
 }
 function renderProfitReports(){
   const d=key(), ym=d.slice(0,7);
-  // Doanh thu tại quầy của từng ngày lấy từ history theo ĐÚNG ngày đó.
-  if(currentBusinessDate===d){ history[d]=calc(); }
   const dayStore=history[d]||{total:0,cost:0};
   const dayGrab=grabForDate(d), dayGrabCost=grabCostForRows(dayGrab.rows);
   const dayExpenses=expensesForDate(d);
@@ -678,18 +699,18 @@ function savePrices(){
  render(); alert("Đã lưu giá món.");
 }
 function newDay(){
- if(!confirm("Chốt doanh thu hôm nay và bắt đầu ngày mới? Doanh thu hôm nay sẽ được giữ lại theo đúng ngày."))return;
- const day=currentBusinessDate||key();
- // LƯU DOANH THU CỦA NGÀY HIỆN TẠI TRƯỚC KHI RESET BỘ ĐẾM.
- // Bản cũ đã ghi 0 vào history nên làm mất doanh thu của ngày vừa chốt.
- if(day>=START_DATE){
-   history[day]=calc();
+ const today=key();
+ if(currentBusinessDate!==today){
+   ensureBusinessDay();
+   render();
+   alert("Đã tự động tách sang ngày mới. Dữ liệu ngày trước đã được giữ lại.");
+   return;
  }
- currentBusinessDate=key();
- counts={};actions=[];orderCart={};
- // Không ghi đè history[currentBusinessDate] nếu ngày mới đã có dữ liệu.
- if(!history[currentBusinessDate]) history[currentBusinessDate]={cups:0,total:0,cost:0,profit:0};
- save();render();
+ if(!confirm("Chốt ngày hôm nay và chuẩn bị dữ liệu cho ngày mai? Dữ liệu hôm nay sẽ được giữ nguyên."))return;
+ history[today]=calc();
+ save();
+ render();
+ alert("Đã chốt doanh thu hôm nay. Ngày mai hệ thống sẽ tự tạo ngày mới, không cộng dồn.");
 }
 
 
