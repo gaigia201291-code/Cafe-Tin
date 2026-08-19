@@ -259,9 +259,24 @@ function save(){
  localStorage.setItem("tinGrabRows",JSON.stringify(grabRows));
 }
 function money(n){return n.toLocaleString("vi-VN")+"đ"}
+function repairCurrentDayOnce(){
+ // v12 có thể đã giữ lại bộ đếm tổng của các ngày cũ trong tinToday.
+ // Chỉ xóa bộ đếm hiện tại một lần; không đụng tinHistory, tinOrders hay tinGrabRows.
+ if(localStorage.getItem("tinDailyRepairV13")==="1") return;
+ const today=key();
+ const storedDate=localStorage.getItem("tinCurrentBusinessDate");
+ if(storedDate===today && localStorage.getItem("tinDailyV2")==="1"){
+   counts={};
+   actions=[];
+   history[today]=calc();
+   localStorage.setItem("tinDailyRepairV13","1");
+   save();
+ }else localStorage.setItem("tinDailyRepairV13","1");
+}
 function render(){
  migrateDailyData();
  ensureBusinessDay();
+ repairCurrentDayOnce();
  const d=new Date();
  document.getElementById("today").textContent=active()
    ? "Bắt đầu bán • Thứ Ba 18/08/2026 • Hôm nay "+d.toLocaleDateString("vi-VN")
@@ -275,8 +290,12 @@ function render(){
  </div></div>`).join("");
  let cups=0,total=0;
  menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m.price});
+ const todayOrdersList=todayOrders();
+ const orderQty=todayOrdersList.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0),0),0);
+ const orderRevenue=todayOrdersList.reduce((s,o)=>s+(Number(o.total)||0),0);
  const todayGrabQty=grabRows.filter(x=>x.date===key()).reduce((s,x)=>s+numVal(x.qty),0);
- cups+=todayGrabQty;
+ cups+=orderQty+todayGrabQty;
+ total+=orderRevenue;
  document.getElementById("cups").textContent=cups;
  document.getElementById("money").textContent=money(total);
  renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports(); renderCostManager();
@@ -469,7 +488,8 @@ function renderHistory(){
    const totalRevenue=storeRevenue+g.net;
    const totalCost=storeCost+grabCostForRows(g.rows);
    const profit=totalRevenue-totalCost-expensesForDate(k);
-   const qty=(Number(x.cups)||0)+g.qty;
+   const orderQty=orders.filter(o=>o.date===k).reduce((s,o)=>s+o.items.reduce((a,it)=>a+(Number(it.qty)||0),0),0);
+   const qty=(orders.some(o=>o.date===k)?orderQty:(Number(x.cups)||0))+g.qty;
    return `<div style="padding:9px 0;border-bottom:1px solid #eee">
      <div class="row"><span><strong>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</strong></span><strong>${money(totalRevenue)}</strong></div>
      <div style="font-size:12px;margin-top:4px">Tại quán: ${money(storeRevenue)} • Grab: ${money(g.net)} • ${qty} món</div>
