@@ -227,6 +227,10 @@ menu=menu.map(m=>{
 let history=JSON.parse(localStorage.getItem("tinHistory")||"{}");
 let counts=JSON.parse(localStorage.getItem("tinToday")||"{}");
 let actions=JSON.parse(localStorage.getItem("tinActions")||"[]");
+// Ngày mà bộ đếm bán tại cửa hàng hiện tại đang thuộc về.
+// Từ đây doanh thu bán tại quầy được tách riêng theo từng ngày, kể cả khi
+// người dùng không bấm "Sang ngày mới" đúng lúc qua 0h.
+let currentBusinessDate=localStorage.getItem("tinCurrentBusinessDate")||key();
 let expenses=JSON.parse(localStorage.getItem("tinExpenses")||"[]");
 let orders=JSON.parse(localStorage.getItem("tinOrders")||"[]");
 let orderCart=JSON.parse(localStorage.getItem("tinOrderCart")||"{}");
@@ -244,6 +248,7 @@ function save(){
  menu.forEach(m=>{costs[String(m.name||"").trim()]=Math.max(0,Number(m.cost)||0)});
  localStorage.setItem("tinCosts",JSON.stringify(costs));
  localStorage.setItem("tinToday",JSON.stringify(counts));
+ localStorage.setItem("tinCurrentBusinessDate",currentBusinessDate);
  localStorage.setItem("tinHistory",JSON.stringify(history));
  localStorage.setItem("tinActions",JSON.stringify(actions));
  localStorage.setItem("tinExpenses",JSON.stringify(expenses));
@@ -253,6 +258,7 @@ function save(){
 }
 function money(n){return n.toLocaleString("vi-VN")+"đ"}
 function render(){
+ ensureBusinessDay();
  const d=new Date();
  document.getElementById("today").textContent=active()
    ? "Bắt đầu bán • Thứ Ba 18/08/2026 • Hôm nay "+d.toLocaleDateString("vi-VN")
@@ -281,6 +287,7 @@ function toggleOrder(){
   btn.textContent=open?"➕ Mở order":"➖ Đóng order";
 }
 function changeOrder(i,d){
+  ensureBusinessDay();
   if(!active()){alert("Cafe Tin ❤️ bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
   orderCart[i]=Math.max(0,(orderCart[i]||0)+d);
   if(orderCart[i]===0) delete orderCart[i];
@@ -302,6 +309,7 @@ function orderItems(){
   return menu.map((m,i)=>({name:m.name,qty:orderCart[i]||0,price:Number(m.price)||0,cost:Number(m.cost)||0})).filter(x=>x.qty>0);
 }
 function checkoutOrder(){
+  ensureBusinessDay();
   const items=orderItems();
   if(!items.length){alert("Chưa có món trong order.");return}
   const total=items.reduce((s,x)=>s+x.qty*x.price,0), now=new Date();
@@ -384,6 +392,7 @@ function change(i,d){
  save(); render();
 }
 function undo(){
+ ensureBusinessDay();
  if(!actions.length){alert("Chưa có thao tác để hoàn tác.");return}
  const a=actions.pop(); counts[a.i]=a.old;
  history[key()]=calc(); save(); render();
@@ -398,7 +407,48 @@ function calc(){
  });
  return {cups,total,cost,profit:total-cost};
 }
+
+// Tự động chốt dữ liệu quầy khi sang ngày mới.
+// Như vậy doanh thu ngày 18/08 sẽ không bị cộng dồn sang 19/08.
+function ensureBusinessDay(){
+ const today=key();
+ if(currentBusinessDate===today)return;
+ if(currentBusinessDate && currentBusinessDate>=START_DATE){
+   history[currentBusinessDate]=calc();
+ }
+ currentBusinessDate=today;
+ counts={};
+ actions=[];
+ orderCart={};
+ save();
+}
+
 function renderHistory(){
+ const keys=new Set(Object.keys(history).filter(k=>k>=START_DATE));
+ orders.forEach(o=>{if(o.date&&o.date>=START_DATE)keys.add(o.date);});
+ grabRows.forEach(x=>{if(x.date&&x.date>=START_DATE)keys.add(x.date);});
+ const sorted=[...keys].sort().reverse();
+ document.getElementById("history").innerHTML=sorted.length?sorted.map(k=>{
+   const x=history[k]||{total:0,cost:0,profit:0,cups:0};
+   const g=grabForDate(k);
+   // Nếu đơn order có ngày này, ưu tiên tổng order để tránh phụ thuộc vào
+   // snapshot history cũ.
+   const orderRevenue=orders.filter(o=>o.date===k).reduce((s,o)=>s+(Number(o.total)||0),0);
+   const storeRevenue=orderRevenue>0?orderRevenue:(Number(x.total)||0);
+   const storeCost=orderRevenue>0
+     ?orders.filter(o=>o.date===k).reduce((s,o)=>s+o.items.reduce((a,it)=>a+(Number(it.qty)||0)*(Number(it.cost)||0),0),0)
+     :(Number(x.cost)||0);
+   const totalRevenue=storeRevenue+g.net;
+   const totalCost=storeCost+grabCostForRows(g.rows);
+   const profit=totalRevenue-totalCost-expensesForDate(k);
+   const qty=(Number(x.cups)||0)+g.qty;
+   return `<div style="padding:9px 0;border-bottom:1px solid #eee">
+     <div class="row"><span><strong>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</strong></span><strong>${money(totalRevenue)}</strong></div>
+     <div style="font-size:12px;margin-top:4px">Tại quán: ${money(storeRevenue)} • Grab: ${money(g.net)} • ${qty} món</div>
+     <div style="font-size:12px;margin-top:3px">Lãi sau cost & chi phí: <strong>${money(profit)}</strong></div>
+   </div>`;
+ }).join(""):"Chưa có dữ liệu.";
+}
  const keys=Object.keys(history).filter(k=>k>=START_DATE).sort().reverse();
  document.getElementById("history").innerHTML=keys.length?keys.map(k=>{
    const x=history[k]; const gq=grabForDate(k).qty; const combinedQty=(Number(x.cups)||0)+gq; return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</span><strong>${money(x.total)} • ${combinedQty} món${x.cost!=null?" • Lãi "+money((Number(x.profit)!=null?Number(x.profit):Number(x.total)-Number(x.cost||0))):""}</strong></div>`
@@ -627,7 +677,10 @@ function savePrices(){
 }
 function newDay(){
  if(!confirm("Xóa số liệu hôm nay? Lịch sử các ngày trước vẫn giữ nguyên."))return;
- counts={};actions=[];orderCart={};history[key()]={cups:0,total:0,cost:0,profit:0};save();render();
+ currentBusinessDate=key();
+ counts={};actions=[];orderCart={};
+ history[currentBusinessDate]={cups:0,total:0,cost:0,profit:0};
+ save();render();
 }
 
 
