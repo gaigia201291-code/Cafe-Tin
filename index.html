@@ -65,7 +65,7 @@ select{width:100%;padding:6px;border:1px solid #ddd;border-radius:9px;background
 </div>
 
 <div class="summary">
-  <div><span>Tổng số món hôm nay</span><strong id="cups">0</strong></div>
+  <div><span>Tổng số món order hôm nay</span><strong id="cups">0</strong></div>
   <div><span>Doanh thu hôm nay</span><strong class="big" id="money">0đ</strong></div>
   <div class="actions">
     <button onclick="undo()">↩ Hoàn tác</button>
@@ -300,8 +300,10 @@ function render(){
  const todayOrdersList=todayOrders();
  const orderQty=todayOrdersList.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0),0),0);
  const orderRevenue=todayOrdersList.reduce((s,o)=>s+(Number(o.total)||0),0);
+ // Tổng số món hôm nay của QUẦY chỉ lấy từ các order đã bấm "Chốt order".
+ // Không cộng số lượng món từ file Grab vào bộ đếm này; Grab có thống kê riêng.
  const todayGrabQty=grabRows.filter(x=>x.date===key()).reduce((s,x)=>s+numVal(x.qty),0);
- const cups=orderQty+todayGrabQty;
+ const cups=orderQty;
  const total=orderRevenue;
  document.getElementById("cups").textContent=cups;
  document.getElementById("money").textContent=money(total);
