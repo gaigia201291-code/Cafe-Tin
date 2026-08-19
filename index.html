@@ -241,7 +241,13 @@ let grabRawRows=[];
 let grabPendingFileName="";
 const START_DATE="2026-08-18";
 
-function key(){return new Date().toISOString().slice(0,10)}
+function key(){
+  const d=new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
 function active(){return key()>=START_DATE}
 function save(){
  localStorage.setItem("tinMenu",JSON.stringify(menu));
@@ -288,14 +294,15 @@ function render(){
  <div class="count">${orderCart[i]||0}</div>
  <button onclick="changeOrder(${i},1)">+</button>
  </div></div>`).join("");
- let cups=0,total=0;
- menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m.price});
+ // Bộ đếm hôm nay lấy trực tiếp từ các order đã bấm "Chốt order".
+ // Không cộng thêm tinToday nữa vì tinToday là dữ liệu cũ/nguồn phụ và
+ // trước đây đã làm số món bị cộng đôi.
  const todayOrdersList=todayOrders();
  const orderQty=todayOrdersList.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0),0),0);
  const orderRevenue=todayOrdersList.reduce((s,o)=>s+(Number(o.total)||0),0);
  const todayGrabQty=grabRows.filter(x=>x.date===key()).reduce((s,x)=>s+numVal(x.qty),0);
- cups+=orderQty+todayGrabQty;
- total+=orderRevenue;
+ const cups=orderQty+todayGrabQty;
+ const total=orderRevenue;
  document.getElementById("cups").textContent=cups;
  document.getElementById("money").textContent=money(total);
  renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports(); renderCostManager();
@@ -337,10 +344,8 @@ function checkoutOrder(){
   const total=items.reduce((s,x)=>s+x.qty*x.price,0), now=new Date();
   const order={id:Date.now(),date:key(),time:now.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}),items,total};
   orders.push(order);
-  items.forEach(x=>{
-    const idx=menu.findIndex(m=>m.name===x.name);
-    if(idx>=0) counts[idx]=(counts[idx]||0)+x.qty;
-  });
+  // Không cộng order vào counts: bộ đếm và doanh thu hôm nay lấy trực tiếp từ orders.
+  // Giữ counts chỉ để tương thích với dữ liệu cũ.
   history[key()]=calc();
   orderCart={}; save(); render(); printOrder(order);
 }
@@ -361,12 +366,8 @@ function deleteOrder(id){
   if(!order)return;
   if(!confirm(`Xóa order #${String(order.id).slice(-6)}?\nDoanh thu và số món của order này sẽ được trừ lại.`))return;
 
-  // Trừ lại số lượng món mà order này đã cộng vào thống kê.
-  order.items.forEach(x=>{
-    const idx=menu.findIndex(m=>m.name===x.name);
-    if(idx>=0) counts[idx]=Math.max(0,(Number(counts[idx])||0)-(Number(x.qty)||0));
-  });
-
+  // Order là nguồn dữ liệu chính, nên chỉ cần xóa order.
+  // Không trừ counts để tránh làm lệch bộ đếm cũ.
   orders=orders.filter(o=>String(o.id)!==String(id));
 
   // Cập nhật lại lịch sử ngày của order sau khi xóa.
@@ -420,14 +421,16 @@ function undo(){
  history[key()]=calc(); save(); render();
 }
 function calc(){
- let cups=0,total=0,cost=0;
- menu.forEach((m,i)=>{
-   const q=Number(counts[i]||0);
-   cups+=q;
-   total+=q*(Number(m.price)||0);
-   cost+=q*(Number(m.cost)||0);
- });
- return {cups,total,cost,profit:total-cost};
+ const today=key();
+ const list=orders.filter(o=>o.date===today);
+ if(list.length){
+   const cups=list.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0),0),0);
+   const total=list.reduce((s,o)=>s+(Number(o.total)||0),0);
+   const cost=list.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.cost)||0),0),0);
+   return {cups,total,cost,profit:total-cost};
+ }
+ // Nếu chưa có order hôm nay, không lấy counts cũ để tránh mang số hôm qua sang.
+ return {cups:0,total:0,cost:0,profit:0};
 }
 
 // Khởi tạo sổ doanh thu theo ngày, đồng thời xử lý dữ liệu cũ bị cộng dồn.
