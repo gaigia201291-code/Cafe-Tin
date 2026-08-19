@@ -449,11 +449,6 @@ function renderHistory(){
    </div>`;
  }).join(""):"Chưa có dữ liệu.";
 }
- const keys=Object.keys(history).filter(k=>k>=START_DATE).sort().reverse();
- document.getElementById("history").innerHTML=keys.length?keys.map(k=>{
-   const x=history[k]; const gq=grabForDate(k).qty; const combinedQty=(Number(x.cups)||0)+gq; return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}</span><strong>${money(x.total)} • ${combinedQty} món${x.cost!=null?" • Lãi "+money((Number(x.profit)!=null?Number(x.profit):Number(x.total)-Number(x.cost||0))):""}</strong></div>`
- }).join(""):"Chưa có dữ liệu.";
-}
 
 function grabForDate(date){
   const rows=grabRows.filter(x=>x.date===date);
