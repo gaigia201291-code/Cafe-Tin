@@ -959,11 +959,34 @@ function restoreData(event){
       if(!confirm("Khôi phục sẽ thay dữ liệu hiện tại bằng dữ liệu trong file. Tiếp tục?")) return;
 
       menu=Array.isArray(data.tinMenu)?data.tinMenu:[];
-      history=data.tinHistory||{};
       counts=data.tinToday||{};
       actions=data.tinActions||[];
       expenses=data.tinExpenses||[];
       orders=data.tinOrders||[];
+
+      // Khôi phục lại lịch sử theo từng đơn hàng. Một số file sao lưu cũ
+      // có tinHistory bị thiếu/ghi 0 dù tinOrders vẫn còn đầy đủ.
+      // tinOrders là nguồn dữ liệu chi tiết nên dùng nó để tái tạo lịch sử ngày.
+      const rebuiltHistory={};
+      orders.forEach(o=>{
+        const day=String(o.date||"").slice(0,10);
+        if(!day) return;
+        if(!rebuiltHistory[day]) rebuiltHistory[day]={cups:0,total:0,cost:0,profit:0};
+        const h=rebuiltHistory[day];
+        (Array.isArray(o.items)?o.items:[]).forEach(x=>{
+          const q=Math.max(0,Number(x.qty)||0);
+          h.cups+=q;
+          h.total+=q*(Number(x.price)||0);
+          h.cost+=q*(Number(x.cost)||0);
+        });
+        h.profit=h.total-h.cost;
+      });
+
+      // Giữ các ngày có lịch sử cũ nhưng không có order chi tiết, đồng thời
+      // ưu tiên số liệu tái tạo từ order khi ngày đó có order.
+      const oldHistory=(data.tinHistory&&typeof data.tinHistory==="object"&&!Array.isArray(data.tinHistory))?data.tinHistory:{};
+      history={...oldHistory,...rebuiltHistory};
+
       orderCart=data.tinOrderCart||{};
       grabRows=data.tinGrabRows||[];
       savedCosts=(data.tinCosts && typeof data.tinCosts==="object" && !Array.isArray(data.tinCosts)) ? data.tinCosts : {};
