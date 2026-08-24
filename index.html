@@ -927,16 +927,38 @@ function restoreData(event){
   const reader=new FileReader();
   reader.onload=function(){
     try{
-      const data=JSON.parse(reader.result);
-      if(!data || !Array.isArray(data.tinMenu) ||
-         typeof data.tinHistory!=="object" ||
-         typeof data.tinToday!=="object" ||
-         !Array.isArray(data.tinActions) ||
-         !Array.isArray(data.tinExpenses)){
-        throw new Error("File sao lưu không đúng định dạng.");
+      let data=JSON.parse(String(reader.result||""));
+
+      // Hỗ trợ cả file sao lưu Cafe Tin v3 và file cứu hộ chứa localStorage.
+      if(data && data.type==="CAFE_TIN_EMERGENCY_DUMP" && data.localStorage){
+        const ls=data.localStorage;
+        data={
+          version:3,
+          exportedAt:data.exportedAt,
+          tinMenu:ls.tinMenu||[],
+          tinCosts:ls.tinCosts||{},
+          tinHistory:ls.tinHistory||{},
+          tinToday:ls.tinToday||{},
+          tinActions:ls.tinActions||[],
+          tinExpenses:ls.tinExpenses||[],
+          tinOrders:ls.tinOrders||[],
+          tinOrderCart:ls.tinOrderCart||{},
+          tinGrabRows:ls.tinGrabRows||[]
+        };
       }
+
+      if(!data || typeof data!=="object") throw new Error("JSON không phải đối tượng dữ liệu");
+      if(!Array.isArray(data.tinMenu)) throw new Error("Thiếu danh sách món (tinMenu)");
+      if(data.tinHistory===null || typeof data.tinHistory!=="object" || Array.isArray(data.tinHistory)) throw new Error("tinHistory không hợp lệ");
+      if(data.tinToday===null || typeof data.tinToday!=="object" || Array.isArray(data.tinToday)) throw new Error("tinToday không hợp lệ");
+      if(!Array.isArray(data.tinActions)) throw new Error("tinActions không hợp lệ");
+      if(!Array.isArray(data.tinExpenses)) throw new Error("tinExpenses không hợp lệ");
+      if(data.tinOrders!=null && !Array.isArray(data.tinOrders)) throw new Error("tinOrders không hợp lệ");
+      if(data.tinGrabRows!=null && !Array.isArray(data.tinGrabRows)) throw new Error("tinGrabRows không hợp lệ");
+
       if(!confirm("Khôi phục sẽ thay dữ liệu hiện tại bằng dữ liệu trong file. Tiếp tục?")) return;
-      menu=data.tinMenu;
+
+      menu=Array.isArray(data.tinMenu)?data.tinMenu:[];
       history=data.tinHistory||{};
       counts=data.tinToday||{};
       actions=data.tinActions||[];
@@ -944,23 +966,33 @@ function restoreData(event){
       orders=data.tinOrders||[];
       orderCart=data.tinOrderCart||{};
       grabRows=data.tinGrabRows||[];
-      savedCosts=(data.tinCosts && typeof data.tinCosts==="object") ? data.tinCosts : {};
-      menu=(Array.isArray(menu)?menu:[]).map(m=>Array.isArray(m)?{name:m[0],price:Number(m[1])||0,cost:0}:{name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0});
+      savedCosts=(data.tinCosts && typeof data.tinCosts==="object" && !Array.isArray(data.tinCosts)) ? data.tinCosts : {};
+
+      menu=menu.map(m=>Array.isArray(m)
+        ? {name:m[0],price:Number(m[1])||0,cost:Number(m[2])||0}
+        : {name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0}
+      );
       menu=menu.map(m=>{
         const k=String(m.name||"").trim();
-        const c=Number(m.cost);
+        const c=Number(Object.prototype.hasOwnProperty.call(savedCosts,k)?savedCosts[k]:m.cost);
         return {...m,cost:Number.isFinite(c)?Math.max(0,c):0};
       });
+
       save();
       render();
-      alert("Đã khôi phục dữ liệu thành công.");
+      alert("Đã khôi phục thành công: "+orders.length+" đơn hàng, "+expenses.length+" khoản chi.");
     }catch(e){
-      alert("Không thể khôi phục: file không hợp lệ.");
+      alert("Không thể khôi phục: "+(e && e.message ? e.message : "file không hợp lệ."));
+      console.error(e);
     }finally{
       event.target.value="";
     }
   };
-  reader.readAsText(file);
+  reader.onerror=function(){
+    alert("Không thể đọc file sao lưu trên thiết bị.");
+    event.target.value="";
+  };
+  reader.readAsText(file,"UTF-8");
 }
 
 render();
