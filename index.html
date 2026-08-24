@@ -203,9 +203,11 @@ select{width:100%;padding:6px;border:1px solid #ddd;border-radius:9px;background
   <div class="actions">
     <button onclick="backupData()">⬇️ Sao lưu</button>
     <button onclick="document.getElementById('restoreFile').click()">⬆️ Khôi phục</button>
+    <button onclick="emergencyDump()">🚑 Cứu dữ liệu</button>
   </div>
   <input id="restoreFile" type="file" accept=".json,application/json"
          style="display:none" onchange="restoreData(event)">
+  <div class="note"><strong>🚑 Cứu dữ liệu:</strong> xuất toàn bộ dữ liệu đang có trong bộ nhớ Chrome, kể cả các khóa dữ liệu cũ mà bản mới không dùng. Nếu dữ liệu cũ vẫn còn trên máy, file này giúp anh kiểm tra và phục hồi.</div>
   <div class="note">Nên sao lưu định kỳ. File sao lưu chứa món, giá, doanh thu, thao tác và chi phí đang lưu trên máy.</div>
 </div>
 
@@ -854,6 +856,42 @@ function downloadGrabTemplate(){
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mau-import-grab-cafe-tin.csv";
   document.body.appendChild(a);a.click();a.remove();
+}
+
+function emergencyDump(){
+  try{
+    const all={};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k!==null) all[k]=localStorage.getItem(k);
+    }
+    const parsed={};
+    Object.keys(all).forEach(k=>{
+      try{ parsed[k]=JSON.parse(all[k]); }catch(e){ parsed[k]=all[k]; }
+    });
+    const payload={
+      type:"CAFE_TIN_EMERGENCY_DUMP",
+      version:1,
+      exportedAt:new Date().toISOString(),
+      origin:location.origin,
+      keys:Object.keys(all),
+      localStorage:parsed
+    };
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const stamp=new Date().toISOString().replace(/[:.]/g,"-");
+    a.href=url;
+    a.download="CAFE-TIN-CUU-DU-LIEU-"+stamp+".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    const current={history:history,counts:counts,actions:actions,expenses:expenses,orders:orders,orderCart:orderCart,grabRows:grabRows,menu:menu};
+    const signal=JSON.stringify(current);
+    localStorage.setItem("tinEmergencyLastExport",JSON.stringify({at:new Date().toISOString(),keyCount:Object.keys(all).length,hasBusinessData:signal.length>50}));
+    alert("Đã xuất toàn bộ dữ liệu đang có trong Chrome. Hãy giữ file này nguyên vẹn và gửi lại cho anh nếu cần phục hồi.");
+  }catch(e){
+    alert("Không thể xuất dữ liệu cứu hộ: "+e.message);
+  }
 }
 
 function backupData(){
