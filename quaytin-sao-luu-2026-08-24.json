@@ -1,0 +1,1034 @@
+{
+  "version": 3,
+  "exportedAt": "2026-08-24T08:07:52.269Z",
+  "tinMenu": [
+    {
+      "name": "Cà phê đen",
+      "price": 12000,
+      "cost": 5000
+    },
+    {
+      "name": "Cà phê sữa",
+      "price": 15000,
+      "cost": 6000
+    },
+    {
+      "name": "Cà phê muối",
+      "price": 17000,
+      "cost": 8000
+    },
+    {
+      "name": "Bạc xỉu",
+      "price": 18000,
+      "cost": 7000
+    },
+    {
+      "name": "Mì trộn full topping",
+      "price": 25000,
+      "cost": 15000
+    },
+    {
+      "name": "Sữa chua kem muối",
+      "price": 15000,
+      "cost": 7000
+    },
+    {
+      "name": "Cacao latte",
+      "price": 15000,
+      "cost": 5000
+    },
+    {
+      "name": "Cacao latte kem muối",
+      "price": 17000,
+      "cost": 7000
+    },
+    {
+      "name": "Matcha latte",
+      "price": 15000,
+      "cost": 7000
+    },
+    {
+      "name": "Matcha latte kem muối",
+      "price": 17000,
+      "cost": 9000
+    },
+    {
+      "name": "americano",
+      "price": 12000,
+      "cost": 5000
+    }
+  ],
+  "tinCosts": {
+    "Cà phê đen": 5000,
+    "Cà phê sữa": 6000,
+    "Cà phê muối": 8000,
+    "Bạc xỉu": 7000,
+    "Mì trộn full topping": 15000,
+    "Sữa chua kem muối": 7000,
+    "Cacao latte": 5000,
+    "Cacao latte kem muối": 7000,
+    "Matcha latte": 7000,
+    "Matcha latte kem muối": 9000,
+    "americano": 5000
+  },
+  "tinHistory": {
+    "2026-08-18": {
+      "cups": 14,
+      "total": 227000,
+      "cost": 110000,
+      "profit": 117000
+    },
+    "2026-08-19": {
+      "cups": 0,
+      "total": 0,
+      "cost": 0,
+      "profit": 0
+    },
+    "2026-08-20": {
+      "cups": 0,
+      "total": 0,
+      "cost": 0,
+      "profit": 0
+    },
+    "2026-08-21": {
+      "cups": 0,
+      "total": 0,
+      "cost": 0,
+      "profit": 0
+    },
+    "2026-08-22": {
+      "cups": 0,
+      "total": 0,
+      "cost": 0,
+      "profit": 0
+    },
+    "2026-08-23": {
+      "cups": 0,
+      "total": 0,
+      "cost": 0,
+      "profit": 0
+    },
+    "2026-08-24": {
+      "cups": 18,
+      "total": 265000,
+      "cost": 104000,
+      "profit": 161000
+    }
+  },
+  "tinToday": {},
+  "tinActions": [],
+  "tinExpenses": [
+    {
+      "id": 1786702066856,
+      "date": "2026-08-14",
+      "name": "Cafe",
+      "amount": 237000
+    },
+    {
+      "id": 1786702084792,
+      "date": "2026-08-14",
+      "name": "Lò vi sóng",
+      "amount": 500000
+    },
+    {
+      "id": 1786702270188,
+      "date": "2026-08-14",
+      "name": "Đồ lặt vặt",
+      "amount": 3000000
+    },
+    {
+      "id": 1786702292760,
+      "date": "2026-08-14",
+      "name": "Nguyên liệu mỳ trôn",
+      "amount": 289000
+    },
+    {
+      "id": 1786702304111,
+      "date": "2026-08-14",
+      "name": "Mỳ",
+      "amount": 164000
+    },
+    {
+      "id": 1786702344007,
+      "date": "2026-08-14",
+      "name": "Đăng ký grab",
+      "amount": 990000
+    },
+    {
+      "id": 1786702369391,
+      "date": "2026-08-14",
+      "name": "In ấn",
+      "amount": 410000
+    },
+    {
+      "id": 1786787137283,
+      "date": "2026-08-15",
+      "name": "Dù",
+      "amount": 250000
+    },
+    {
+      "id": 1786859808716,
+      "date": "2026-08-16",
+      "name": "In ấn",
+      "amount": 160000
+    },
+    {
+      "id": 1786864699001,
+      "date": "2026-08-16",
+      "name": "Cfe chồn",
+      "amount": 66000
+    },
+    {
+      "id": 1786890802149,
+      "date": "2026-08-16",
+      "name": "in ấn",
+      "amount": 110000
+    },
+    {
+      "id": 1786930909818,
+      "date": "2026-08-17",
+      "name": "Nguyên liệu",
+      "amount": 212000
+    },
+    {
+      "id": 1786969947093,
+      "date": "2026-08-17",
+      "name": "nguyên liệu",
+      "amount": 111111
+    },
+    {
+      "id": 1787020659452,
+      "date": "2026-08-18",
+      "name": "nguyên liệu",
+      "amount": 308000
+    },
+    {
+      "id": 1787385440977,
+      "date": "2026-08-22",
+      "name": "Ly",
+      "amount": 36000
+    },
+    {
+      "id": 1787385454036,
+      "date": "2026-08-22",
+      "name": "Cafe",
+      "amount": 66000
+    },
+    {
+      "id": 1787550563721,
+      "date": "2026-08-24",
+      "name": "ly",
+      "amount": 48000
+    }
+  ],
+  "tinOrders": [
+    {
+      "id": 1787012836868,
+      "date": "2026-08-18",
+      "time": "07:27",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 44000
+    },
+    {
+      "id": 1787012896236,
+      "date": "2026-08-18",
+      "time": "07:28",
+      "items": [
+        {
+          "name": "Mì trộn full topping",
+          "qty": 2,
+          "price": 25000,
+          "cost": 15000
+        }
+      ],
+      "total": 50000
+    },
+    {
+      "id": 1787015742853,
+      "date": "2026-08-18",
+      "time": "08:15",
+      "items": [
+        {
+          "name": "Matcha latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 7000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787017923521,
+      "date": "2026-08-18",
+      "time": "08:52",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787019535303,
+      "date": "2026-08-18",
+      "time": "09:18",
+      "items": [
+        {
+          "name": "Sữa chua kem muối",
+          "qty": 1,
+          "price": 15000,
+          "cost": 7000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787028848214,
+      "date": "2026-08-18",
+      "time": "11:54",
+      "items": [
+        {
+          "name": "Matcha latte kem muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 9000
+        }
+      ],
+      "total": 17000
+    },
+    {
+      "id": 1787038335413,
+      "date": "2026-08-18",
+      "time": "14:32",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 8000
+        },
+        {
+          "name": "Sữa chua kem muối",
+          "qty": 2,
+          "price": 15000,
+          "cost": 7000
+        }
+      ],
+      "total": 59000
+    },
+    {
+      "id": 1787097333355,
+      "date": "2026-08-18",
+      "time": "06:55",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        }
+      ],
+      "total": 12000
+    },
+    {
+      "id": 1787098419426,
+      "date": "2026-08-19",
+      "time": "07:13",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 29000
+    },
+    {
+      "id": 1787099727291,
+      "date": "2026-08-19",
+      "time": "07:35",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 27000
+    },
+    {
+      "id": 1787103514509,
+      "date": "2026-08-19",
+      "time": "08:38",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê sữa",
+          "qty": 2,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 42000
+    },
+    {
+      "id": 1787105443405,
+      "date": "2026-08-19",
+      "time": "09:10",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        },
+        {
+          "name": "Bạc xỉu",
+          "qty": 2,
+          "price": 18000,
+          "cost": 7000
+        },
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 66000
+    },
+    {
+      "id": 1787123308976,
+      "date": "2026-08-19",
+      "time": "14:08",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 32000
+    },
+    {
+      "id": 1787186571766,
+      "date": "2026-08-20",
+      "time": "07:42",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 29000
+    },
+    {
+      "id": 1787188435863,
+      "date": "2026-08-20",
+      "time": "08:13",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 32000
+    },
+    {
+      "id": 1787190256472,
+      "date": "2026-08-20",
+      "time": "08:44",
+      "items": [
+        {
+          "name": "Cà phê muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 17000
+    },
+    {
+      "id": 1787192010819,
+      "date": "2026-08-20",
+      "time": "09:13",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787193417192,
+      "date": "2026-08-20",
+      "time": "09:36",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787207293781,
+      "date": "2026-08-20",
+      "time": "13:28",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 2,
+          "price": 15000,
+          "cost": 5000
+        },
+        {
+          "name": "Matcha latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 7000
+        }
+      ],
+      "total": 45000
+    },
+    {
+      "id": 1787209465452,
+      "date": "2026-08-20",
+      "time": "14:04",
+      "items": [
+        {
+          "name": "Sữa chua kem muối",
+          "qty": 1,
+          "price": 15000,
+          "cost": 7000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787212364842,
+      "date": "2026-08-20",
+      "time": "14:52",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê sữa",
+          "qty": 2,
+          "price": 15000,
+          "cost": 6000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 2,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 76000
+    },
+    {
+      "id": 1787272525081,
+      "date": "2026-08-21",
+      "time": "07:35",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787275059419,
+      "date": "2026-08-21",
+      "time": "08:17",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 2,
+          "price": 15000,
+          "cost": 6000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 3,
+          "price": 17000,
+          "cost": 8000
+        }
+      ],
+      "total": 81000
+    },
+    {
+      "id": 1787275204434,
+      "date": "2026-08-21",
+      "time": "08:20",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787276973615,
+      "date": "2026-08-21",
+      "time": "08:49",
+      "items": [
+        {
+          "name": "Bạc xỉu",
+          "qty": 1,
+          "price": 18000,
+          "cost": 7000
+        }
+      ],
+      "total": 18000
+    },
+    {
+      "id": 1787278874494,
+      "date": "2026-08-21",
+      "time": "09:21",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787290551311,
+      "date": "2026-08-21",
+      "time": "12:35",
+      "items": [
+        {
+          "name": "Sữa chua kem muối",
+          "qty": 2,
+          "price": 15000,
+          "cost": 7000
+        }
+      ],
+      "total": 30000
+    },
+    {
+      "id": 1787295926053,
+      "date": "2026-08-21",
+      "time": "14:05",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 2,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 39000
+    },
+    {
+      "id": 1787301713583,
+      "date": "2026-08-21",
+      "time": "15:41",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 5,
+          "price": 12000,
+          "cost": 5000
+        }
+      ],
+      "total": 60000
+    },
+    {
+      "id": 1787303653665,
+      "date": "2026-08-21",
+      "time": "16:14",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 2,
+          "price": 15000,
+          "cost": 5000
+        },
+        {
+          "name": "Matcha latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 7000
+        }
+      ],
+      "total": 45000
+    },
+    {
+      "id": 1787361010868,
+      "date": "2026-08-22",
+      "time": "08:10",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 2,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 30000
+    },
+    {
+      "id": 1787364096273,
+      "date": "2026-08-22",
+      "time": "09:01",
+      "items": [
+        {
+          "name": "Bạc xỉu",
+          "qty": 1,
+          "price": 18000,
+          "cost": 7000
+        }
+      ],
+      "total": 18000
+    },
+    {
+      "id": 1787370840760,
+      "date": "2026-08-22",
+      "time": "10:54",
+      "items": [
+        {
+          "name": "Bạc xỉu",
+          "qty": 1,
+          "price": 18000,
+          "cost": 7000
+        }
+      ],
+      "total": 18000
+    },
+    {
+      "id": 1787382080064,
+      "date": "2026-08-22",
+      "time": "14:01",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 2,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê sữa",
+          "qty": 1,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 39000
+    },
+    {
+      "id": 1787447236234,
+      "date": "2026-08-23",
+      "time": "08:07",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 2,
+          "price": 15000,
+          "cost": 6000
+        },
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 45000
+    },
+    {
+      "id": 1787453306425,
+      "date": "2026-08-23",
+      "time": "09:48",
+      "items": [
+        {
+          "name": "Bạc xỉu",
+          "qty": 1,
+          "price": 18000,
+          "cost": 7000
+        }
+      ],
+      "total": 18000
+    },
+    {
+      "id": 1787462714302,
+      "date": "2026-08-23",
+      "time": "12:25",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Sữa chua kem muối",
+          "qty": 1,
+          "price": 15000,
+          "cost": 7000
+        },
+        {
+          "name": "Cacao latte kem muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 7000
+        },
+        {
+          "name": "Matcha latte kem muối",
+          "qty": 1,
+          "price": 17000,
+          "cost": 9000
+        }
+      ],
+      "total": 61000
+    },
+    {
+      "id": 1787477404851,
+      "date": "2026-08-23",
+      "time": "16:30",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Bạc xỉu",
+          "qty": 1,
+          "price": 18000,
+          "cost": 7000
+        }
+      ],
+      "total": 30000
+    },
+    {
+      "id": 1787531279095,
+      "date": "2026-08-24",
+      "time": "07:27",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787533346702,
+      "date": "2026-08-24",
+      "time": "08:02",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 15000
+    },
+    {
+      "id": 1787536667920,
+      "date": "2026-08-24",
+      "time": "08:57",
+      "items": [
+        {
+          "name": "Cà phê sữa",
+          "qty": 2,
+          "price": 15000,
+          "cost": 6000
+        }
+      ],
+      "total": 30000
+    },
+    {
+      "id": 1787538640332,
+      "date": "2026-08-24",
+      "time": "09:30",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        },
+        {
+          "name": "Cà phê muối",
+          "qty": 2,
+          "price": 17000,
+          "cost": 8000
+        },
+        {
+          "name": "Bạc xỉu",
+          "qty": 2,
+          "price": 18000,
+          "cost": 7000
+        },
+        {
+          "name": "Cacao latte",
+          "qty": 1,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 97000
+    },
+    {
+      "id": 1787538975024,
+      "date": "2026-08-24",
+      "time": "09:36",
+      "items": [
+        {
+          "name": "Cacao latte",
+          "qty": 2,
+          "price": 15000,
+          "cost": 5000
+        }
+      ],
+      "total": 30000
+    },
+    {
+      "id": 1787540221796,
+      "date": "2026-08-24",
+      "time": "09:57",
+      "items": [
+        {
+          "name": "Bạc xỉu",
+          "qty": 1,
+          "price": 18000,
+          "cost": 7000
+        }
+      ],
+      "total": 18000
+    },
+    {
+      "id": 1787552969752,
+      "date": "2026-08-24",
+      "time": "13:29",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 1,
+          "price": 12000,
+          "cost": 5000
+        }
+      ],
+      "total": 12000
+    },
+    {
+      "id": 1787555450294,
+      "date": "2026-08-24",
+      "time": "14:10",
+      "items": [
+        {
+          "name": "Cà phê đen",
+          "qty": 4,
+          "price": 12000,
+          "cost": 5000
+        }
+      ],
+      "total": 48000
+    }
+  ],
+  "tinOrderCart": {},
+  "tinGrabRows": []
+}
