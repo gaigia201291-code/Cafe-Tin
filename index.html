@@ -923,90 +923,92 @@ function backupData(){
 
 function restoreData(event){
   const file=event.target.files && event.target.files[0];
-  if(!file)return;
+  if(!file) return;
   const reader=new FileReader();
   reader.onload=function(){
     try{
-      let data=JSON.parse(String(reader.result||""));
+      const raw=String(reader.result||"").replace(/^\uFEFF/,"").trim();
+      if(!raw) throw new Error("File sao lưu đang trống");
+      let data=JSON.parse(raw);
 
-      // Hỗ trợ cả file sao lưu Cafe Tin v3 và file cứu hộ chứa localStorage.
       if(data && data.type==="CAFE_TIN_EMERGENCY_DUMP" && data.localStorage){
-        const ls=data.localStorage;
+        const ls=data.localStorage||{};
         data={
           version:3,
-          exportedAt:data.exportedAt,
-          tinMenu:ls.tinMenu||[],
-          tinCosts:ls.tinCosts||{},
-          tinHistory:ls.tinHistory||{},
-          tinToday:ls.tinToday||{},
-          tinActions:ls.tinActions||[],
-          tinExpenses:ls.tinExpenses||[],
-          tinOrders:ls.tinOrders||[],
-          tinOrderCart:ls.tinOrderCart||{},
-          tinGrabRows:ls.tinGrabRows||[]
+          tinMenu:ls.tinMenu,
+          tinCosts:ls.tinCosts,
+          tinHistory:ls.tinHistory,
+          tinToday:ls.tinToday,
+          tinActions:ls.tinActions,
+          tinExpenses:ls.tinExpenses,
+          tinOrders:ls.tinOrders,
+          tinOrderCart:ls.tinOrderCart,
+          tinGrabRows:ls.tinGrabRows
         };
       }
 
-      if(!data || typeof data!=="object") throw new Error("JSON không phải đối tượng dữ liệu");
-      if(!Array.isArray(data.tinMenu)) throw new Error("Thiếu danh sách món (tinMenu)");
-      if(data.tinHistory===null || typeof data.tinHistory!=="object" || Array.isArray(data.tinHistory)) throw new Error("tinHistory không hợp lệ");
-      if(data.tinToday===null || typeof data.tinToday!=="object" || Array.isArray(data.tinToday)) throw new Error("tinToday không hợp lệ");
-      if(!Array.isArray(data.tinActions)) throw new Error("tinActions không hợp lệ");
-      if(!Array.isArray(data.tinExpenses)) throw new Error("tinExpenses không hợp lệ");
-      if(data.tinOrders!=null && !Array.isArray(data.tinOrders)) throw new Error("tinOrders không hợp lệ");
-      if(data.tinGrabRows!=null && !Array.isArray(data.tinGrabRows)) throw new Error("tinGrabRows không hợp lệ");
+      if(!data || typeof data!=="object" || Array.isArray(data)) throw new Error("File không đúng định dạng Cafe Tin");
+      const asArray=(v)=>Array.isArray(v)?v:[];
+      const asObject=(v)=>v && typeof v==="object" && !Array.isArray(v)?v:{};
+
+      // Các trường chính của file sao lưu. Không để một trường phụ bị lỗi làm mất toàn bộ dữ liệu.
+      const newMenu=asArray(data.tinMenu).map(m=>Array.isArray(m)
+        ? {name:String(m[0]??""),price:Number(m[1])||0,cost:Number(m[2])||0}
+        : {name:String(m?.name??""),price:Number(m?.price)||0,cost:Number(m?.cost)||0}
+      ).filter(m=>m.name.trim());
+      if(!newMenu.length) throw new Error("Không tìm thấy danh sách món trong file");
+
+      const newOrders=asArray(data.tinOrders);
+      const newExpenses=asArray(data.tinExpenses);
+      const newCosts=asObject(data.tinCosts);
 
       if(!confirm("Khôi phục sẽ thay dữ liệu hiện tại bằng dữ liệu trong file. Tiếp tục?")) return;
 
-      menu=Array.isArray(data.tinMenu)?data.tinMenu:[];
-      counts=data.tinToday||{};
-      actions=data.tinActions||[];
-      expenses=data.tinExpenses||[];
-      orders=data.tinOrders||[];
+      menu=newMenu.map(m=>{
+        const k=m.name.trim();
+        const c=Object.prototype.hasOwnProperty.call(newCosts,k)?Number(newCosts[k]):Number(m.cost);
+        return {...m,cost:Number.isFinite(c)?Math.max(0,c):0};
+      });
+      orders=newOrders;
+      expenses=newExpenses;
+      actions=asArray(data.tinActions);
+      counts=asObject(data.tinToday);
+      orderCart=asObject(data.tinOrderCart);
+      grabRows=asArray(data.tinGrabRows);
 
-      // Khôi phục lại lịch sử theo từng đơn hàng. Một số file sao lưu cũ
-      // có tinHistory bị thiếu/ghi 0 dù tinOrders vẫn còn đầy đủ.
-      // tinOrders là nguồn dữ liệu chi tiết nên dùng nó để tái tạo lịch sử ngày.
+      // Luôn dựng lại lịch sử từ chi tiết đơn hàng.
       const rebuiltHistory={};
       orders.forEach(o=>{
-        const day=String(o.date||"").slice(0,10);
+        const day=String(o?.date||"").slice(0,10);
         if(!day) return;
         if(!rebuiltHistory[day]) rebuiltHistory[day]={cups:0,total:0,cost:0,profit:0};
         const h=rebuiltHistory[day];
-        (Array.isArray(o.items)?o.items:[]).forEach(x=>{
-          const q=Math.max(0,Number(x.qty)||0);
-          h.cups+=q;
-          h.total+=q*(Number(x.price)||0);
-          h.cost+=q*(Number(x.cost)||0);
+        asArray(o.items).forEach(x=>{
+          const q=Math.max(0,Number(x?.qty)||0);
+          h.cups += q;
+          h.total += q*(Number(x?.price)||0);
+          h.cost += q*(Number(x?.cost)||0);
         });
         h.profit=h.total-h.cost;
       });
+      history={...asObject(data.tinHistory),...rebuiltHistory};
 
-      // Giữ các ngày có lịch sử cũ nhưng không có order chi tiết, đồng thời
-      // ưu tiên số liệu tái tạo từ order khi ngày đó có order.
-      const oldHistory=(data.tinHistory&&typeof data.tinHistory==="object"&&!Array.isArray(data.tinHistory))?data.tinHistory:{};
-      history={...oldHistory,...rebuiltHistory};
+      // Ghi từng kho dữ liệu độc lập, tránh save()/render() làm lỗi toàn bộ quá trình khôi phục.
+      localStorage.setItem("tinMenu",JSON.stringify(menu));
+      localStorage.setItem("tinCosts",JSON.stringify(Object.fromEntries(menu.map(m=>[m.name.trim(),m.cost]))));
+      localStorage.setItem("tinToday",JSON.stringify(counts));
+      localStorage.setItem("tinHistory",JSON.stringify(history));
+      localStorage.setItem("tinActions",JSON.stringify(actions));
+      localStorage.setItem("tinExpenses",JSON.stringify(expenses));
+      localStorage.setItem("tinOrders",JSON.stringify(orders));
+      localStorage.setItem("tinOrderCart",JSON.stringify(orderCart));
+      localStorage.setItem("tinGrabRows",JSON.stringify(grabRows));
 
-      orderCart=data.tinOrderCart||{};
-      grabRows=data.tinGrabRows||[];
-      savedCosts=(data.tinCosts && typeof data.tinCosts==="object" && !Array.isArray(data.tinCosts)) ? data.tinCosts : {};
-
-      menu=menu.map(m=>Array.isArray(m)
-        ? {name:m[0],price:Number(m[1])||0,cost:Number(m[2])||0}
-        : {name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0}
-      );
-      menu=menu.map(m=>{
-        const k=String(m.name||"").trim();
-        const c=Number(Object.prototype.hasOwnProperty.call(savedCosts,k)?savedCosts[k]:m.cost);
-        return {...m,cost:Number.isFinite(c)?Math.max(0,c):0};
-      });
-
-      save();
-      render();
-      alert("Đã khôi phục thành công: "+orders.length+" đơn hàng, "+expenses.length+" khoản chi.");
+      try{ render(); }catch(renderErr){ console.error("Render sau khôi phục:",renderErr); }
+      alert("Đã khôi phục thành công!\n"+orders.length+" đơn hàng\n"+expenses.length+" khoản chi\nĐã tính lại doanh thu và lợi nhuận theo từng ngày.");
     }catch(e){
+      console.error("Khôi phục lỗi:",e);
       alert("Không thể khôi phục: "+(e && e.message ? e.message : "file không hợp lệ."));
-      console.error(e);
     }finally{
       event.target.value="";
     }
