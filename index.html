@@ -422,7 +422,7 @@ function renderHistory(){
    const cost=(Number(x.cost)||0)+gc;
    const exp=expensesForDate(k);
    const profit=revenue-cost-exp;
-   return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}<br><small>Chi phí: ${money(exp)}</small></span><strong>${money(revenue)} • ${combinedQty} món<br><small>Lãi: ${money(profit)}</small></strong></div>``
+   return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}<br><small>Chi phí: ${money(exp)}</small></span><strong>${money(revenue)} • ${combinedQty} món<br><small>Lãi: ${money(profit)}</small></strong></div>`
  }).join(""):"Chưa có dữ liệu.";
 }
 
