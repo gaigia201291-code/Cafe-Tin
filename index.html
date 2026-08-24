@@ -265,13 +265,15 @@ function save(){
  localStorage.setItem("tinOrderCart",JSON.stringify(orderCart));
  localStorage.setItem("tinGrabRows",JSON.stringify(grabRows));
 }
+function setText(id,value){const e=document.getElementById(id); if(e)e.textContent=value;}
+function setHTML(id,value){const e=document.getElementById(id); if(e)e.innerHTML=value;}
 function money(n){return n.toLocaleString("vi-VN")+"đ"}
 function render(){
   renderMonthlySummary();
  const d=new Date();
- document.getElementById("today").textContent=active()
+ setText("today",active()
    ? "Bắt đầu bán • Thứ Ba 18/08/2026 • Hôm nay "+d.toLocaleDateString("vi-VN")
-   : "Chưa bắt đầu bán • Bắt đầu từ Thứ Ba 18/08/2026";
+   : "Chưa bắt đầu bán • Bắt đầu từ Thứ Ba 18/08/2026");
  document.getElementById("items").innerHTML=menu.map((m,i)=>`
  <div class="card"><div class="row">
  <div class="name">${m.name}<div class="price">${money(m.price)}</div></div>
@@ -283,8 +285,8 @@ function render(){
  menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m.price});
  const todayGrabQty=grabRows.filter(x=>x.date===key()).reduce((s,x)=>s+numVal(x.qty),0);
  cups+=todayGrabQty;
- document.getElementById("cups").textContent=cups;
- document.getElementById("money").textContent=money(total);
+ setText("cups",cups);
+ setText("money",money(total));
  renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports(); renderCostManager();
 }
 
@@ -311,7 +313,7 @@ function renderOrder(){
     }
   });
   document.getElementById("orderItems").innerHTML=out||'<div class="note">Chưa chọn món.</div>';
-  document.getElementById("orderTotal").textContent=money(total);
+  setText("orderTotal",money(total));
 }
 function orderItems(){
   return menu.map((m,i)=>({name:m.name,qty:orderCart[i]||0,price:Number(m.price)||0,cost:Number(m.cost)||0})).filter(x=>x.qty>0);
@@ -337,9 +339,9 @@ function renderTodayOrderStats(){
   const list=todayOrders();
   const revenue=list.reduce((s,o)=>s+(Number(o.total)||0),0);
   const items=list.reduce((s,o)=>s+o.items.reduce((a,x)=>a+x.qty,0),0);
-  document.getElementById("todayOrders").textContent=list.length;
-  document.getElementById("todayRevenue").textContent=money(revenue);
-  document.getElementById("todayItems").textContent=items+" món đã chốt";
+  setText("todayOrders",list.length);
+  setText("todayRevenue",money(revenue));
+  setText("todayItems",items+" món đã chốt");
 }
 function deleteOrder(id){
   const order=orders.find(o=>String(o.id)===String(id));
@@ -422,7 +424,7 @@ function renderHistory(){
    const cost=(Number(x.cost)||0)+gc;
    const exp=expensesForDate(k);
    const profit=revenue-cost-exp;
-   return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}<br><small>Chi phí: ${money(exp)}</small></span><strong>${money(revenue)} • ${combinedQty} món<br><small>Lãi: ${money(profit)}</small></strong></div>``
+   return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}<br><small>Chi phí: ${money(exp)}</small></span><strong>${money(revenue)} • ${combinedQty} món<br><small>Lãi: ${money(profit)}</small></strong></div>`
  }).join(""):"Chưa có dữ liệu.";
 }
 
@@ -481,27 +483,27 @@ function renderProfitReports(){
   const dayRevenue=(Number(dayStore.total)||0)+dayGrab.net;
   const dayCost=(Number(dayStore.cost)||0)+dayGrabCost;
   const dayProfit=dayRevenue-dayCost-dayExpenses;
-  document.getElementById("dailyStoreRevenue").textContent=money(Number(dayStore.total)||0);
-  document.getElementById("dailyGrabRevenue").textContent=money(dayGrab.net);
-  document.getElementById("dailyTotalRevenue").textContent=money(dayRevenue);
-  document.getElementById("dailyStoreCost").textContent=money(Number(dayStore.cost)||0);
-  document.getElementById("dailyGrabCost").textContent=money(dayGrabCost);
-  document.getElementById("dailyTotalCost").textContent=money(dayCost);
-  document.getElementById("dailyExpenses").textContent=money(dayExpenses);
-  document.getElementById("dailyProfit").textContent=money(dayProfit);
-  document.getElementById("dailyMargin").textContent=(dayRevenue?(dayProfit/dayRevenue*100):0).toFixed(1)+"%";
+  setText("dailyStoreRevenue",money(Number(dayStore.total)||0));
+  setText("dailyGrabRevenue",money(dayGrab.net));
+  setText("dailyTotalRevenue",money(dayRevenue));
+  setText("dailyStoreCost",money(Number(dayStore.cost)||0));
+  setText("dailyGrabCost",money(dayGrabCost));
+  setText("dailyTotalCost",money(dayCost));
+  setText("dailyExpenses",money(dayExpenses));
+  setText("dailyProfit",money(dayProfit));
+  setText("dailyMargin",(dayRevenue?(dayProfit/dayRevenue*100):0).toFixed(1)+"%");
 
   const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym), me=monthlyOtherExpenses(ym);
   const mr=ms.revenue+mg.net, mc=ms.cost+mg.cost, mp=mr-mc-me;
-  document.getElementById("monthStoreRevenue").textContent=money(ms.revenue);
-  document.getElementById("monthGrabRevenue").textContent=money(mg.net);
-  document.getElementById("monthRevenueFull").textContent=money(mr);
-  document.getElementById("monthStoreCost").textContent=money(ms.cost);
-  document.getElementById("monthGrabCost").textContent=money(mg.cost);
-  document.getElementById("monthCostFull").textContent=money(mc);
-  document.getElementById("monthExpensesFull").textContent=money(me);
-  document.getElementById("monthProfitFull").textContent=money(mp);
-  document.getElementById("monthMarginFull").textContent=(mr?(mp/mr*100):0).toFixed(1)+"%";
+  setText("monthStoreRevenue",money(ms.revenue));
+  setText("monthGrabRevenue",money(mg.net));
+  setText("monthRevenueFull",money(mr));
+  setText("monthStoreCost",money(ms.cost));
+  setText("monthGrabCost",money(mg.cost));
+  setText("monthCostFull",money(mc));
+  setText("monthExpensesFull",money(me));
+  setText("monthProfitFull",money(mp));
+  setText("monthMarginFull",(mr?(mp/mr*100):0).toFixed(1)+"%");
 }
 
 function renderMonth(){
@@ -509,8 +511,8 @@ function renderMonth(){
  const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym);
  const total=ms.revenue+mg.net;
  const cups=ms.qty+mg.qty;
- document.getElementById("monthTotal").textContent=money(total);
- document.getElementById("monthCups").textContent=cups+" món trong tháng";
+ setText("monthTotal",money(total));
+ setText("monthCups",cups+" món trong tháng");
 }
 renderMonthlySummary();
 
@@ -542,12 +544,12 @@ function renderExpenses(){
   const ym=key().slice(0,7);
   let total=0;
   expenses.forEach(x=>{if(x.date && x.date.startsWith(ym)) total+=Number(x.amount)||0});
-  document.getElementById("expenseTotal").textContent=money(total);
+  setText("expenseTotal",money(total));
   const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym);
   const revenue=ms.revenue+mg.net;
   const cost=ms.cost+mg.cost;
   const profit=revenue-cost-total;
-  document.getElementById("profitTotal").textContent=money(profit);
+  setText("profitTotal",money(profit));
   const list=expenses.filter(x=>x.date && x.date.startsWith(ym)).sort((a,b)=>
     (b.date||"").localeCompare(a.date||"") || b.id-a.id);
   document.getElementById("expenseHistory").innerHTML=list.length?list.map(x=>
@@ -838,17 +840,17 @@ function renderGrab(){
   const sources=[...new Set(grabRows.map(x=>x.source).filter(Boolean))];
   document.getElementById("grabImportHistory").innerHTML=sources.length?
     `<div class="note">File đã nhập: ${sources.join(" • ")}</div>`:"";
-  document.getElementById("compareGrabRevenue").textContent=money(t.net);
-  document.getElementById("compareStoreRevenue").textContent=money(st.revenue);
-  document.getElementById("compareTotalRevenue").textContent=money(totalRev);
-  document.getElementById("compareGrabShare").textContent=(totalRev?((t.net/totalRev)*100).toFixed(1):"0")+"%";
-  document.getElementById("compareGrabMargin").textContent=(t.net?(gp.profit/t.net*100):0).toFixed(1)+"%";
-  document.getElementById("compareStoreMargin").textContent=(st.revenue?(st.profit/st.revenue*100):0).toFixed(1)+"%";
-  document.getElementById("compareGrabCost").textContent=money(gp.cost);
-  document.getElementById("compareGrabProfit").textContent=money(gp.profit);
-  document.getElementById("compareStoreCost").textContent=money(st.cost);
-  document.getElementById("compareStoreProfit").textContent=money(st.profit);
-  document.getElementById("compareTotalProfit").textContent=money(totalProfit);
+  setText("compareGrabRevenue",money(t.net));
+  setText("compareStoreRevenue",money(st.revenue));
+  setText("compareTotalRevenue",money(totalRev));
+  setText("compareGrabShare",(totalRev?((t.net/totalRev)*100).toFixed(1):"0")+"%");
+  setText("compareGrabMargin",(t.net?(gp.profit/t.net*100):0).toFixed(1)+"%");
+  setText("compareStoreMargin",(st.revenue?(st.profit/st.revenue*100):0).toFixed(1)+"%");
+  setText("compareGrabCost",money(gp.cost));
+  setText("compareGrabProfit",money(gp.profit));
+  setText("compareStoreCost",money(st.cost));
+  setText("compareStoreProfit",money(st.profit));
+  setText("compareTotalProfit",money(totalProfit));
   renderProfitByItem();
 }
 function downloadGrabTemplate(){
