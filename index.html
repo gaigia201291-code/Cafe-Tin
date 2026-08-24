@@ -1,1046 +1,136 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f3f6ef">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json">
-<title>Cafe Tin ❤️ - Sổ bán hàng</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#8b4513"><link rel="manifest" href="manifest.json">
+<title>Tin Cafe • Tối giản v2</title>
 <style>
-*{box-sizing:border-box} body{font-family:Arial,sans-serif;background:#f3f6ef;margin:0;color:#273027;padding:14px}
-h1{text-align:center;margin:5px 0 3px;font-size:25px}.sub{text-align:center;color:#718070;margin-bottom:15px}
-.card{background:#fff;border-radius:17px;padding:13px;margin:9px 0;box-shadow:0 2px 9px #00000012}
-.row{display:flex;align-items:center;gap:8px}.name{font-weight:700;flex:1}.price{font-size:13px;color:#788278;margin-top:3px}
-button{border:0;border-radius:12px;padding:9px 14px;font-size:21px;background:#e6eee1;color:#263126}
-.count{min-width:34px;text-align:center;font-size:20px;font-weight:700}
-.summary{background:#fff;border-radius:17px;padding:16px;margin-top:14px;box-shadow:0 2px 10px #0002}
-.summary div{display:flex;justify-content:space-between;padding:5px 0}.big{font-size:23px;font-weight:800}
-.actions{display:flex;gap:8px;margin-top:10px}.actions button{flex:1;font-size:15px;background:#e1e8de}
-.section{font-size:18px;font-weight:800;margin:20px 3px 8px}
-.history{font-size:14px}.history div{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0}
-.month{font-size:19px;font-weight:800}
-select{width:100%;padding:6px;border:1px solid #ddd;border-radius:9px;background:#fff}input{width:80px;border:1px solid #ddd;border-radius:9px;padding:6px;text-align:right}
-.note{font-size:12px;color:#7b857b;margin-top:8px}
-#pricesBox{display:none}
+:root{--bg:#f7f3ee;--card:#fff;--ink:#2f241f;--muted:#776b63;--accent:#8b4513;--line:#e6ddd5;--good:#1d7a46;--danger:#b3261e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}.app{max-width:900px;margin:auto;padding:12px 12px 40px}.brand{background:var(--accent);color:#fff;border-radius:18px;padding:16px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}.brand b{font-size:24px}.brand small{opacity:.85}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:sticky;top:0;z-index:3;background:var(--bg);padding:6px 0}.tabs button,.btn{border:0;border-radius:12px;padding:11px 9px;font-weight:700;background:#eadfd6;color:var(--ink)}.tabs button.active,.btn.primary{background:var(--accent);color:#fff}.btn.good{background:var(--good);color:#fff}.btn.danger{background:var(--danger);color:#fff}.tab{display:none}.tab.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.stat{padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff}.stat small{display:block;color:var(--muted)}.stat b{font-size:20px}.row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:7px 0}.row>*{min-width:0}input,select{width:100%;padding:11px;border:1px solid #d7ccc4;border-radius:10px;background:#fff;font-size:16px}label{font-size:13px;color:var(--muted);display:block;margin:7px 0 4px}.item{display:grid;grid-template-columns:1fr auto 70px 86px;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.item .name{font-weight:700}.item small{display:block;color:var(--muted)}.money{font-weight:800;text-align:right}.list{max-height:390px;overflow:auto}.empty{color:var(--muted);text-align:center;padding:22px}.section-title{font-size:18px;font-weight:800;margin:4px 0 10px}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions .btn{flex:1;min-width:130px}.total{font-size:24px;font-weight:900}.note{color:var(--muted);font-size:13px}.success{color:var(--good);font-weight:700}.danger{color:var(--danger);font-weight:700}.monthnav{display:flex;gap:8px;align-items:center}.monthnav input{max-width:170px}.summaryline{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
+@media(max-width:520px){.tabs button{font-size:12px;padding:10px 4px}.grid{grid-template-columns:1fr 1fr}.item{grid-template-columns:1fr auto 64px 78px}.brand b{font-size:21px}}
+</style></head>
+<body><div class="app">
+<header class="brand"><div><b>Cà Phê Tin ❤️</b><div><small>Đơn giản • Offline • Dữ liệu trên máy</small></div></div><small id="backupStatus">Đang sao lưu…</small></header>
+<nav class="tabs no-print"><button class="active" data-tab="order">Order</button><button data-tab="stats">Thống kê</button><button data-tab="cost">Chi phí</button><button data-tab="data">Dữ liệu</button></nav>
+<section id="order" class="tab active">
+<div class="card"><div class="section-title">Tạo đơn</div><div id="menuList"></div><div class="row"><span class="note">Tổng đơn</span><span class="total" id="cartTotal">0đ</span></div><div class="actions"><button class="btn primary" id="saveOrder">Chốt đơn</button><button class="btn" id="clearCart">Xóa đơn</button></div></div>
+<div class="card"><div class="section-title">Đơn hôm nay</div><div id="todayOrders" class="list"></div></div>
+</section>
+<section id="stats" class="tab">
+<div class="card"><div class="section-title">Hôm nay</div><div class="grid"><div class="stat"><small>Doanh thu</small><b id="todayRevenue">0đ</b></div><div class="stat"><small>Giá vốn</small><b id="todayCogs">0đ</b></div><div class="stat"><small>Chi phí ngày</small><b id="todayExpense">0đ</b></div><div class="stat"><small>Lợi nhuận</small><b id="todayProfit">0đ</b></div></div></div>
+<div class="card"><div class="section-title">Theo tháng</div><div class="monthnav"><input type="month" id="monthPick"><button class="btn" id="thisMonth">Tháng này</button></div><div class="grid" style="margin-top:10px"><div class="stat"><small>Doanh thu tháng</small><b id="monthRevenue">0đ</b></div><div class="stat"><small>Giá vốn tháng</small><b id="monthCogs">0đ</b></div><div class="stat"><small>Chi phí tháng</small><b id="monthExpense">0đ</b></div><div class="stat"><small>Lợi nhuận tháng</small><b id="monthProfit">0đ</b></div></div></div>
+<div class="card"><div class="section-title">Thêm doanh thu / order theo ngày</div><div class="note">Dùng khi bạn muốn bổ sung doanh thu của một ngày cũ mà không cần nhập lại từng món.</div><label>Ngày</label><input type="date" id="manualDate"><label>Doanh thu</label><input id="manualRevenue" type="number" min="0" step="1000" placeholder="0"><label>Giá vốn</label><input id="manualCogs" type="number" min="0" step="1000" placeholder="0"><label>Số order</label><input id="manualOrderCount" type="number" min="1" step="1" value="1"><label>Ghi chú</label><input id="manualNote" placeholder="Ví dụ: doanh thu nhập từ sổ cũ"><button class="btn primary" style="width:100%;margin-top:10px" id="addManualRevenue">Thêm doanh thu</button></div>
+<div class="card"><div class="section-title">Lịch sử theo ngày</div><div id="dailyHistory"></div></div>
+<div class="card"><div class="section-title">Tiền hiện có</div><div class="grid"><div class="stat"><small>Tiền mặt</small><b id="cashNow">0đ</b></div><div class="stat"><small>Bank</small><b id="bankNow">0đ</b></div></div><div class="actions" style="margin-top:10px"><button class="btn" id="editMoney">Cập nhật tiền mặt / Bank</button></div></div>
+</section>
+<section id="cost" class="tab">
+<div class="card"><div class="section-title">Chi phí trong ngày</div><label>Ngày</label><input type="date" id="expenseDate"><label>Nội dung</label><input id="expenseName" placeholder="Ví dụ: tiền điện, nguyên liệu..."><label>Số tiền</label><input id="expenseAmount" type="number" min="0" step="1000" placeholder="0"><button class="btn primary" style="width:100%;margin-top:10px" id="addExpense">Thêm chi phí</button></div>
+<div class="card"><div class="section-title">Chi phí mở quầy</div><div class="note">Khoản này được theo dõi riêng, không gộp vào chi phí vận hành hằng ngày.</div><label>Nội dung</label><input id="setupName" placeholder="Ví dụ: bàn ghế, máy móc..."><label>Số tiền</label><input id="setupAmount" type="number" min="0" step="1000" placeholder="0"><button class="btn primary" style="width:100%;margin-top:10px" id="addSetup">Thêm chi phí mở quầy</button><div class="summaryline"><span>Tổng chi phí mở quầy</span><b id="setupTotal">0đ</b></div></div>
+<div class="card"><div class="section-title">Danh sách chi phí</div><div id="expenseList"></div></div>
+</section>
+<section id="data" class="tab">
+<div class="card"><div class="section-title">Sao lưu & khôi phục</div><p class="note">Web tự động lưu một bản sao trong bộ nhớ máy mỗi ngày. Bạn vẫn nên tải file sao lưu xuống để phòng mất dữ liệu khi đổi/xóa trình duyệt.</p><div id="autoInfo" class="note"></div><div class="actions" style="margin-top:10px"><button class="btn good" id="downloadBackup">Tải sao lưu</button><button class="btn" id="restoreBtn">Khôi phục file</button><input id="restoreFile" type="file" accept=".json,application/json" hidden></div><div class="actions" style="margin-top:10px"><button class="btn" id="clearData">Xóa toàn bộ dữ liệu</button></div></div>
+<div class="card"><div class="section-title">Menu & giá vốn</div><div id="menuAdmin"></div><div class="actions"><button class="btn primary" id="addMenu">Thêm món</button></div></div>
+</section>
 
-.order-box{background:#fff;border-radius:17px;padding:14px;margin:10px 0;box-shadow:0 2px 9px #00000012}
-.order-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eee}
-.order-item .name{font-weight:700;flex:1}
-.order-total{font-size:22px;font-weight:800;text-align:right;margin-top:10px}
-.order-actions{display:flex;gap:8px;margin-top:10px}
-.order-actions button{flex:1;font-size:15px}
-#invoice{display:none}
-@media print{
-  body>*{display:none!important}
-  #invoice{display:block!important;width:72mm;margin:0 auto;font-family:Arial,sans-serif;font-size:12px;color:#000}
-  #invoice h2{text-align:center;margin:0 0 5px;font-size:18px}
-  #invoice .line{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
-  #invoice .total{font-size:15px;font-weight:800;border-top:1px dashed #000;margin-top:5px;padding-top:5px}
-  @page{size:72mm auto;margin:3mm}
-}
-</style>
-</head>
-<body>
-<h1>☕ CAFE TIN ❤️</h1>
-<div class="sub" id="today"></div>
-
-<div class="section" style="margin-top:10px">🧾 ORDER</div>
-<div class="order-box" style="margin-top:6px">
-  <button id="orderToggle" onclick="toggleOrder()" style="width:100%;font-size:18px">➕ Mở order</button>
 </div>
-<div id="orderPanel" style="display:none">
-  <div id="items"></div>
-  <div class="order-box">
-    <div class="section" style="margin:0 0 8px">Món đã chọn</div>
-    <div id="orderItems"></div>
-    <div class="order-total">Tổng order: <span id="orderTotal">0đ</span></div>
-    <div class="order-actions">
-      <button onclick="clearOrder()">🗑 Xóa order</button>
-      <button onclick="checkoutOrder()">✅ Chốt order</button>
-    </div>
-    <div class="note">Chọn món và số lượng ở phía trên. Khi chốt, order được lưu vào thống kê và có thể in hóa đơn.</div>
-  </div>
-</div>
-
-<div class="summary">
-  <div><span>Tổng số món hôm nay</span><strong id="cups">0</strong></div>
-  <div><span>Doanh thu hôm nay</span><strong class="big" id="money">0đ</strong></div>
-  <div class="actions">
-    <button onclick="undo()">↩ Hoàn tác</button>
-    <button onclick="showPrices()">⚙ Giá món</button>
-    <button onclick="showAddItem()">➕ Thêm món</button>
-  </div>
-  <div id="pricesBox">
-    <div class="section">Chỉnh giá bán & giá vốn</div>
-    <div id="priceInputs"></div>
-    <button style="width:100%;font-size:15px;margin-top:8px" onclick="savePrices()">Lưu giá</button>
-    <div class="note">Giá vốn dùng để tính lợi nhuận từng món/kênh. Có thể để 0 nếu chưa biết.</div>
-  </div>
-</div>
-
-<div class="section">💰 Quản lý Cost từng món</div>
-<div class="card">
-  <div class="note">Nhập giá vốn thực tế của từng món. Hệ thống dùng Cost này để tính vốn, lãi từng món, lãi Grab, lãi cuối ngày và lãi cuối tháng.</div>
-  <div id="costManager"></div>
-  <button type="button" style="width:100%;font-size:15px;margin-top:8px;position:relative;z-index:10;pointer-events:auto" onclick="saveCostManager()">💾 Lưu Cost tất cả món</button>
-</div>
-
-<div id="addItemBox" style="display:none;margin-top:10px">
-    <div class="section">➕ Thêm món mới</div>
-    <input id="newItemName" type="text" placeholder="Tên món"
-           style="width:100%;text-align:left;margin-bottom:7px">
-    <input id="newItemPrice" type="number" min="0" placeholder="Giá bán"
-           style="width:100%;text-align:left;margin-bottom:7px">
-    <input id="newItemCost" type="number" min="0" placeholder="Cost / giá vốn"
-           style="width:100%;text-align:left;margin-bottom:7px">
-    <button style="width:100%;font-size:15px" onclick="addItem()">Lưu món mới</button>
-  </div>
-
- 
-<div class="section">📊 Thống kê hôm nay</div>
-<div class="card">
-  <div><strong id="todayOrders">0</strong> order</div>
-  <div style="margin-top:6px"><strong id="todayRevenue">0đ</strong> doanh thu từ order</div>
-  <div class="note" id="todayItems">0 món đã chốt</div>
-</div>
-
-<div class="section">💰 Chi phí & lợi nhuận</div>
-<div class="card">
-  <div class="row"><span class="name">Doanh thu tại quán</span><strong id="dailyStoreRevenue">0đ</strong></div>
-  <div class="row"><span class="name">Thực nhận Grab</span><strong id="dailyGrabRevenue">0đ</strong></div>
-  <div class="row"><span class="name">Tổng doanh thu</span><strong id="dailyTotalRevenue">0đ</strong></div>
-  <hr>
-  <div class="row"><span class="name">Giá vốn món</span><strong id="dailyTotalCost">0đ</strong></div>
-  <div class="row"><span class="name">Chi phí trong ngày</span><strong id="dailyExpenses">0đ</strong></div>
-  <div class="row" style="margin-top:5px"><span class="name">LỢI NHUẬN HÔM NAY</span><strong class="big" id="dailyProfit">0đ</strong></div>
-  <div class="note">Lợi nhuận = doanh thu thực nhận − giá vốn món − chi phí trong ngày.</div>
-</div>
-
-<div class="section">📅 Doanh thu theo ngày</div>
-<div class="card history" id="history"></div>
-
-
-<div class="section">🧾 Lịch sử order hôm nay</div>
-<div class="card history" id="orderHistory"></div>
-
-<div class="section">📊 Doanh thu tháng này</div>
-
-<div class="card">
-  <div class="month" id="monthTotal">0đ</div>
-  <div class="note" id="monthCups">0 món</div>
-</div>
-
-
-<div class="section">🟢 GrabFood — nhập CSV & đối soát</div>
-<div class="card">
-  <div class="actions">
-    <button onclick="document.getElementById('grabFile').click()">📂 Nhập CSV Grab</button>
-    <button onclick="downloadGrabTemplate()">⬇️ Mẫu CSV</button>
-  </div>
-  <input id="grabFile" type="file" accept=".csv,text/csv" style="display:none" onchange="importGrabCSV(event)">
-  <div class="note">Không cần kết nối API Grab. Tải báo cáo CSV từ GrabMerchant rồi nhập vào đây. Lần đầu nếu tên cột khác mẫu, Cafe Tin sẽ cho chọn cột tương ứng.</div>
-
-  <div id="grabMappingBox" style="display:none;margin-top:12px">
-    <div class="section" style="font-size:16px;margin:0 0 8px">Ghép cột CSV Grab</div>
-    <div id="grabMapping"></div>
-    <button style="width:100%;font-size:15px;margin-top:8px" onclick="applyGrabMapping()">✅ Đọc dữ liệu</button>
-    <div class="note">Bắt buộc: Ngày, Tên món, Số lượng. Các cột doanh thu/phí có thể bỏ trống nếu file không có.</div>
-  </div>
-
-  <div id="grabSummary" style="margin-top:12px"></div>
-  <div id="grabItems" class="history" style="margin-top:10px"></div>
-  <div id="grabImportHistory" class="history" style="margin-top:10px"></div>
-</div>
-
-<div class="section">📈 So sánh Grab và bán tại quán</div>
-<div class="card">
-  <div class="row" style="padding:5px 0"><span class="name">GrabFood</span><strong id="compareGrabRevenue">0đ</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Tại quán</span><strong id="compareStoreRevenue">0đ</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Tổng doanh thu</span><strong id="compareTotalRevenue">0đ</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Tỷ trọng Grab</span><strong id="compareGrabShare">0%</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Biên lợi nhuận Grab</span><strong id="compareGrabMargin">0%</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Biên lợi nhuận tại quán</span><strong id="compareStoreMargin">0%</strong></div>
-  <hr>
-  <div class="row" style="padding:5px 0"><span class="name">Giá vốn Grab</span><strong id="compareGrabCost">0đ</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Lợi nhuận Grab</span><strong id="compareGrabProfit">0đ</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Giá vốn tại quán (ước tính)</span><strong id="compareStoreCost">0đ</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Lợi nhuận tại quán</span><strong id="compareStoreProfit">0đ</strong></div>
-  <div class="row" style="padding:5px 0"><span class="name">Tổng lợi nhuận</span><strong id="compareTotalProfit">0đ</strong></div>
-  <div class="note">Lợi nhuận theo kênh dùng giá vốn từng món. Nếu chưa nhập giá vốn, phần lợi nhuận sẽ chưa đầy đủ. Chi phí chung tháng vẫn được tính riêng ở mục Chi phí.</div>
-<div class="section" style="font-size:16px;margin-top:14px">💰 Lợi nhuận theo món</div>
-<div id="profitByItem" class="history"></div>
-<div class="note">Cost = giá vốn 1 món. Lợi nhuận Grab dùng số tiền thực nhận sau các khoản giảm trừ/phí có trong CSV. Tỷ suất lợi nhuận = lợi nhuận / tiền thực nhận.</div>
-</div>
-
-<div class="section">💸 Chi phí từng ngày</div>
-<div class="card">
-  <div class="actions">
-    <button onclick="showExpenseForm()">➕ Thêm chi phí</button>
-  </div>
-  <div id="expenseForm" style="display:none;margin-top:10px">
-    <input id="expenseDate" type="date" style="width:100%;text-align:left;margin-bottom:7px">
-    <input id="expenseName" type="text" placeholder="Tên khoản chi (cà phê, sữa, ly...)"
-           style="width:100%;text-align:left;margin-bottom:7px">
-    <input id="expenseAmount" type="number" min="0" placeholder="Số tiền"
-           style="width:100%;text-align:left;margin-bottom:7px">
-    <button style="width:100%;font-size:15px" onclick="addExpense()">Lưu khoản chi</button>
-  </div>
-  <div style="margin-top:10px"><strong>Tổng chi tháng này</strong>
-    <strong class="big" id="expenseTotal">0đ</strong>
-  </div>
-  <div style="margin-top:8px"><strong>Lợi nhuận tạm tính</strong>
-    <strong id="profitTotal">0đ</strong>
-  </div>
-  <div class="note">Mỗi khoản chi gắn với một ngày. Chi phí của ngày nào sẽ tự động trừ vào lợi nhuận của ngày đó; cuối tháng hệ thống cộng lại.</div>
-  <div class="section" style="font-size:16px;margin-top:14px">Các khoản đã nhập</div>
-  <div class="history" id="expenseHistory"></div>
-</div>
-
-<div class="section">💾 Sao lưu dữ liệu</div>
-<div class="card">
-  <div class="actions">
-    <button onclick="backupData()">⬇️ Sao lưu</button>
-    <button onclick="document.getElementById('restoreFile').click()">⬆️ Khôi phục</button>
-    <button onclick="emergencyDump()">🚑 Cứu dữ liệu</button>
-  </div>
-  <input id="restoreFile" type="file" accept=".json,application/json"
-         style="display:none" onchange="restoreData(event)">
-  <div class="note"><strong>🚑 Cứu dữ liệu:</strong> xuất toàn bộ dữ liệu đang có trong bộ nhớ Chrome, kể cả các khóa dữ liệu cũ mà bản mới không dùng. Nếu dữ liệu cũ vẫn còn trên máy, file này giúp anh kiểm tra và phục hồi.</div>
-  <div class="note">Nên sao lưu định kỳ. File sao lưu chứa món, giá, doanh thu, thao tác và chi phí đang lưu trên máy.</div>
-</div>
-
-<div class="actions">
-  <button onclick="newDay()">🔄 Sang ngày mới</button>
-</div>
-
-<div id="invoice"></div>
 <script>
-const defaultMenu=[
-{name:"Cà phê đen",price:12000,cost:0},{name:"Cà phê sữa",price:15000,cost:0},{name:"Cà phê muối",price:17000,cost:0},
-{name:"Bạc xỉu",price:18000,cost:0},{name:"Mì trộn full topping",price:25000,cost:0},{name:"Sữa chua kem muối",price:17000,cost:0},
-{name:"Cacao latte",price:0,cost:0},{name:"Cacao latte kem muối",price:0,cost:0},{name:"Matcha latte",price:0,cost:0},{name:"Matcha latte kem muối",price:0,cost:0}
-];
-let menuRaw=JSON.parse(localStorage.getItem("tinMenu")||"null");
-let menu=(Array.isArray(menuRaw)?menuRaw:defaultMenu).map(m=>{
-  if(Array.isArray(m)) return {name:m[0],price:Number(m[1])||0,cost:0};
-  return {name:m.name||"",price:Number(m.price)||0,cost:Number(m.cost)||0};
-});
-// Cost được lưu riêng theo TÊN MÓN để không bị mất khi menu thay đổi thứ tự/thêm món.
-let savedCosts={};
-try{
-  savedCosts=JSON.parse(localStorage.getItem("tinCosts")||"{}");
-  if(!savedCosts || typeof savedCosts!=="object" || Array.isArray(savedCosts)) savedCosts={};
-}catch(e){savedCosts={};}
-menu=menu.map(m=>{
-  const k=String(m.name||"").trim();
-  const saved=savedCosts[k];
-  return {...m, cost:Number.isFinite(Number(saved)) ? Math.max(0,Number(saved)) : Math.max(0,Number(m.cost)||0)};
-});
-let history=JSON.parse(localStorage.getItem("tinHistory")||"{}");
-let counts=JSON.parse(localStorage.getItem("tinToday")||"{}");
-let actions=JSON.parse(localStorage.getItem("tinActions")||"[]");
-let expenses=JSON.parse(localStorage.getItem("tinExpenses")||"[]");
-let orders=JSON.parse(localStorage.getItem("tinOrders")||"[]");
-let orderCart=JSON.parse(localStorage.getItem("tinOrderCart")||"{}");
-let grabRows=JSON.parse(localStorage.getItem("tinGrabRows")||"[]");
-let grabRawHeaders=[];
-let grabRawRows=[];
-let grabPendingFileName="";
-const START_DATE="2026-08-18";
+const K={menu:'tin2_menu',orders:'tin2_orders',expenses:'tin2_expenses',setup:'tin2_setup',auto:'tin2_auto_backups',last:'tin2_last_backup',cash:'tin2_cash',bank:'tin2_bank'};
+const $=id=>document.getElementById(id), today=()=>new Date().toISOString().slice(0,10), money=n=>(Number(n)||0).toLocaleString('vi-VN')+'đ';
+let menu=load(K.menu,[]),orders=load(K.orders,[]),expenses=load(K.expenses,[]),setup=load(K.setup,[]),cash=Number(load(K.cash,0)||0),bank=Number(load(K.bank,0)||0),cart={};
+if(!menu.length) menu=[{name:'Cà phê đen',price:12000,cost:5000},{name:'Cà phê sữa',price:15000,cost:6000},{name:'Cà phê muối',price:17000,cost:8000},{name:'Mì trộn full topping',price:25000,cost:15000},{name:'Matcha latte',price:15000,cost:7000}];
+function load(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}}
+function save(){localStorage.setItem(K.menu,JSON.stringify(menu));localStorage.setItem(K.orders,JSON.stringify(orders));localStorage.setItem(K.expenses,JSON.stringify(expenses));localStorage.setItem(K.setup,JSON.stringify(setup));localStorage.setItem(K.cash,JSON.stringify(cash));localStorage.setItem(K.bank,JSON.stringify(bank));autoBackup()}
+function stats(date){let os=orders.filter(o=>o.date===date), revenue=os.reduce((s,o)=>s+Number(o.total||0),0),cogs=os.reduce((s,o)=>s+(o.items||[]).reduce((a,i)=>a+Number(i.cost||0)*Number(i.qty||0),0),0),ex=expenses.filter(e=>e.date===date).reduce((s,e)=>s+Number(e.amount||0),0),orderCount=os.reduce((s,o)=>s+Number(o.orderCount||1),0);return {revenue,cogs,ex,profit:revenue-cogs-ex,orders:os,orderCount}}
+function monthStats(m){let ds=orders.filter(o=>o.date?.startsWith(m)), revenue=ds.reduce((s,o)=>s+Number(o.total||0),0),cogs=ds.reduce((s,o)=>s+(o.items||[]).reduce((a,i)=>a+Number(i.cost||0)*Number(i.qty||0),0),0),ex=expenses.filter(e=>e.date?.startsWith(m)).reduce((s,e)=>s+Number(e.amount||0),0);return{revenue,cogs,ex,profit:revenue-cogs-ex,orderCount:ds.reduce((s,o)=>s+Number(o.orderCount||1),0)}}
+function render(){renderMenu();renderToday();renderStats();renderExpenses();renderSetup();renderMenuAdmin();updateBackupStatus()}
+function renderMenu(){let h='';menu.forEach((m,i)=>{let q=Number(cart[i]||0);h+=`<div class="item"><div><div class="name">${esc(m.name)}</div><small>${money(m.price)}</small></div><button class="btn" type="button" data-minus="${i}">−</button><strong style="text-align:center">${q}</strong><button class="btn primary" type="button" data-plus="${i}">+</button></div>`});$('menuList').innerHTML=h;document.querySelectorAll('[data-plus]').forEach(x=>x.onclick=()=>{let i=+x.dataset.plus;cart[i]=Number(cart[i]||0)+1;renderMenu()});document.querySelectorAll('[data-minus]').forEach(x=>x.onclick=()=>{let i=+x.dataset.minus;cart[i]=Math.max(0,Number(cart[i]||0)-1);renderMenu()});updateCartTotal()}
+function updateCartTotal(){$('cartTotal').textContent=money(menu.reduce((s,m,i)=>s+(cart[i]||0)*m.price,0))}
+function renderToday(){let os=orders.filter(o=>o.date===today()).slice().reverse();$('todayOrders').innerHTML=os.length?os.map(o=>`<div class="summaryline"><span>${o.time||''} • ${(o.items||[]).map(i=>`${esc(i.name)} x${i.qty}`).join(', ')}<br><small>${money(o.total)}</small></span><button class="btn danger" type="button" data-del-order="${o.id}">Xóa</button></div>`).join(''):'<div class="empty">Chưa có đơn hôm nay.</div>';document.querySelectorAll('[data-del-order]').forEach(b=>b.onclick=()=>deleteOrder(b.dataset.delOrder))}
+function renderStats(){$('cashNow').textContent=money(cash);$('bankNow').textContent=money(bank);let t=stats(today());$('todayRevenue').textContent=money(t.revenue);$('todayCogs').textContent=money(t.cogs);$('todayExpense').textContent=money(t.ex);$('todayProfit').textContent=money(t.profit);let m=$('monthPick').value||today().slice(0,7);let ms=monthStats(m);$('monthRevenue').textContent=money(ms.revenue);$('monthCogs').textContent=money(ms.cogs);$('monthExpense').textContent=money(ms.ex);$('monthProfit').textContent=money(ms.profit);let days=[...new Set([...orders.map(o=>o.date),...expenses.map(e=>e.date)])].sort().reverse();$('dailyHistory').innerHTML=days.length?days.map(d=>{let s=stats(d);return `<div class="summaryline"><span>${d}<br><small>${s.orderCount} order</small></span><span style="text-align:right">Doanh thu <b>${money(s.revenue)}</b><br>Lợi nhuận <b>${money(s.profit)}</b></span></div>`}).join(''):'<div class="empty">Chưa có dữ liệu.</div>'}
+function renderExpenses(){let all=expenses.slice().reverse();$('expenseList').innerHTML=all.length?all.map((e,idx)=>`<div class="summaryline"><span>${e.date} • ${esc(e.name)}</span><span><b>${money(e.amount)}</b> <button class="btn danger" onclick="delExpense('${e.id}')">Xóa</button></span></div>`).join(''):'<div class="empty">Chưa có chi phí.</div>'}
+function renderSetup(){let total=setup.reduce((s,e)=>s+Number(e.amount||0),0);$('setupTotal').textContent=money(total);$('setupList')?.remove();let box=document.createElement('div');box.id='setupList';box.innerHTML=setup.length?setup.slice().reverse().map(e=>`<div class="summaryline"><span>${esc(e.name)}</span><span><b>${money(e.amount)}</b> <button class="btn danger" onclick="delSetup('${e.id}')">Xóa</button></span></div>`).join(''):'<div class="empty">Chưa có chi phí mở quầy.</div>';$('setupTotal').parentElement.parentElement.appendChild(box)}
+function renderMenuAdmin(){$('menuAdmin').innerHTML=menu.map((m,i)=>`<div class="item"><div><input value="${escAttr(m.name)}" data-name="${i}"></div><input type="number" value="${m.price}" data-price="${i}"><input type="number" value="${m.cost}" data-cost="${i}"><button class="btn danger" type="button" data-del-menu="${i}">Xóa</button></div>`).join('');document.querySelectorAll('[data-del-menu]').forEach(x=>x.onclick=()=>deleteMenu(+x.dataset.delMenu));document.querySelectorAll('[data-name],[data-price],[data-cost]').forEach(x=>x.onchange=()=>{let i=x.dataset.name??x.dataset.price??x.dataset.cost; if(x.dataset.name!==undefined)menu[i].name=x.value; if(x.dataset.price!==undefined)menu[i].price=Number(x.value)||0;if(x.dataset.cost!==undefined)menu[i].cost=Number(x.value)||0;save();render()})}
+function deleteMenu(i){if(!confirm('Xóa món này khỏi menu?'))return;delete cart[i];menu.splice(i,1);let nc={};Object.keys(cart).forEach(k=>{let n=+k;if(n>i)nc[n-1]=cart[k];else if(n<i)nc[n]=cart[k]});cart=nc;save();render()}
+function updateMoney(){let c=Number(prompt('Tiền mặt hiện có:',cash));if(!Number.isFinite(c)||c<0)return;let b=Number(prompt('Bank hiện có:',bank));if(!Number.isFinite(b)||b<0)return;cash=c;bank=b;save();render()}
+function deleteOrder(id){if(!confirm('Xóa đơn này?'))return;orders=orders.filter(o=>String(o.id)!==String(id));save();render()}
+function addOrder(){let items=menu.map((m,i)=>({name:m.name,qty:Number(cart[i]||0),price:Number(m.price),cost:Number(m.cost)})).filter(x=>x.qty>0);if(!items.length)return alert('Chưa chọn món.');let o={id:Date.now(),date:today(),time:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}),items,total:items.reduce((s,i)=>s+i.qty*i.price,0)};orders.push(o);cart={};save();render();alert('Đã chốt đơn.')}
+function addManualRevenue(){let d=$('manualDate').value||today(),rev=Number($('manualRevenue').value),cost=Number($('manualCogs').value)||0,count=Math.max(1,Number($('manualOrderCount').value)||1),note=$('manualNote').value.trim()||'Doanh thu nhập tay';if(!rev)return alert('Nhập doanh thu.');orders.push({id:Date.now(),date:d,time:'',manual:true,orderCount:count,items:[{name:note,qty:1,price:rev,cost:cost}],total:rev});$('manualRevenue').value='';$('manualCogs').value='';$('manualOrderCount').value='1';$('manualNote').value='';save();render();alert('Đã thêm doanh thu cho ngày '+d+'.')}
+function addExpense(){let n=$('expenseName').value.trim(),a=Number($('expenseAmount').value),d=$('expenseDate').value||today();if(!n||!a)return alert('Nhập đủ nội dung và số tiền.');expenses.push({id:Date.now(),date:d,name:n,amount:a});$('expenseName').value='';$('expenseAmount').value='';save();render()}
+function addSetup(){let n=$('setupName').value.trim(),a=Number($('setupAmount').value);if(!n||!a)return alert('Nhập đủ nội dung và số tiền.');setup.push({id:Date.now(),name:n,amount:a});$('setupName').value='';$('setupAmount').value='';save();render()}
+function delExpense(id){expenses=expenses.filter(x=>String(x.id)!==String(id));save();render()} function delSetup(id){setup=setup.filter(x=>String(x.id)!==String(id));save();render()}
+function autoBackup(){let d=today(),b=load(K.auto,{});b[d]=snapshot();let keys=Object.keys(b).sort();if(keys.length>30)delete b[keys[0]];localStorage.setItem(K.auto,JSON.stringify(b));localStorage.setItem(K.last,JSON.stringify({date:d,time:new Date().toLocaleString('vi-VN')}))}
+function snapshot(){return{version:3,exportedAt:new Date().toISOString(),tinMenu:menu,tinOrders:orders,tinExpenses:expenses,tinSetup:setup,tinCash:cash,tinBank:bank}}
+function downloadBackup(){let blob=new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TinCafe-sao-luu-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function restore(file){let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d||typeof d!=='object')throw Error('File không hợp lệ');let importedOrders=Array.isArray(d.tinOrders)?d.tinOrders:[], importedExpenses=Array.isArray(d.tinExpenses)?d.tinExpenses:[], importedMenu=Array.isArray(d.tinMenu)?d.tinMenu:menu;menu=importedMenu.map(m=>({name:String(m.name||''),price:Number(m.price)||0,cost:Number(m.cost)||0})).filter(m=>m.name);orders=importedOrders;expenses=importedExpenses;setup=Array.isArray(d.tinSetup)?d.tinSetup:[];cash=Number(d.tinCash||0);bank=Number(d.tinBank||0);save();render();alert(`Đã khôi phục: ${orders.length} đơn, ${expenses.length} khoản chi.`)}catch(e){alert('Không thể khôi phục: '+e.message)}};r.readAsText(file)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function escAttr(s){return esc(s)}
+function updateBackupStatus(){let x=load(K.last,null);$('backupStatus').textContent=x?.date===today()?'Đã sao lưu hôm nay':'Sẽ tự sao lưu hôm nay';$('autoInfo').textContent=x?`Bản sao tự động gần nhất: ${x.time}. Lưu trong bộ nhớ của thiết bị.`:'Chưa có bản sao tự động.'}
 
-function key(){return new Date().toISOString().slice(0,10)}
-function active(){return key()>=START_DATE}
-function save(){
- localStorage.setItem("tinMenu",JSON.stringify(menu));
- const costs={};
- menu.forEach(m=>{costs[String(m.name||"").trim()]=Math.max(0,Number(m.cost)||0)});
- localStorage.setItem("tinCosts",JSON.stringify(costs));
- localStorage.setItem("tinToday",JSON.stringify(counts));
- localStorage.setItem("tinHistory",JSON.stringify(history));
- localStorage.setItem("tinActions",JSON.stringify(actions));
- localStorage.setItem("tinExpenses",JSON.stringify(expenses));
- localStorage.setItem("tinOrders",JSON.stringify(orders));
- localStorage.setItem("tinOrderCart",JSON.stringify(orderCart));
- localStorage.setItem("tinGrabRows",JSON.stringify(grabRows));
-}
-function setText(id,value){const e=document.getElementById(id); if(e)e.textContent=value;}
-function setHTML(id,value){const e=document.getElementById(id); if(e)e.innerHTML=value;}
-function money(n){return n.toLocaleString("vi-VN")+"đ"}
-function render(){
-  renderMonthlySummary();
- const d=new Date();
- setText("today",active()
-   ? "Bắt đầu bán • Thứ Ba 18/08/2026 • Hôm nay "+d.toLocaleDateString("vi-VN")
-   : "Chưa bắt đầu bán • Bắt đầu từ Thứ Ba 18/08/2026");
- document.getElementById("items").innerHTML=menu.map((m,i)=>`
- <div class="card"><div class="row">
- <div class="name">${m.name}<div class="price">${money(m.price)}</div></div>
- <button onclick="changeOrder(${i},-1)">−</button>
- <div class="count">${orderCart[i]||0}</div>
- <button onclick="changeOrder(${i},1)">+</button>
- </div></div>`).join("");
- let cups=0,total=0;
- menu.forEach((m,i)=>{cups+=counts[i]||0; total+=(counts[i]||0)*m.price});
- const todayGrabQty=grabRows.filter(x=>x.date===key()).reduce((s,x)=>s+numVal(x.qty),0);
- cups+=todayGrabQty;
- setText("cups",cups);
- setText("money",money(total));
- renderOrder(); renderTodayOrderStats(); renderOrderHistory(); renderHistory(); renderMonth(); renderExpenses(); renderGrab(); renderProfitReports(); renderCostManager();
-}
-
-function toggleOrder(){
-  const panel=document.getElementById("orderPanel");
-  const btn=document.getElementById("orderToggle");
-  const open=panel.style.display!=="none";
-  panel.style.display=open?"none":"block";
-  btn.textContent=open?"➕ Mở order":"➖ Đóng order";
-}
-function changeOrder(i,d){
-  if(!active()){alert("Cafe Tin ❤️ bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
-  orderCart[i]=Math.max(0,(orderCart[i]||0)+d);
-  if(orderCart[i]===0) delete orderCart[i];
-  save(); render();
-}
-function renderOrder(){
-  let total=0, out="";
-  menu.forEach((m,i)=>{
-    const q=orderCart[i]||0;
-    if(q){
-      const line=q*m.price; total+=line;
-      out+=`<div class="order-item"><span class="name">${m.name}</span><span>${q} × ${money(m.price)}</span><strong>${money(line)}</strong></div>`;
-    }
-  });
-  document.getElementById("orderItems").innerHTML=out||'<div class="note">Chưa chọn món.</div>';
-  setText("orderTotal",money(total));
-}
-function orderItems(){
-  return menu.map((m,i)=>({name:m.name,qty:orderCart[i]||0,price:Number(m.price)||0,cost:Number(m.cost)||0})).filter(x=>x.qty>0);
-}
-function checkoutOrder(){
-  const items=orderItems();
-  if(!items.length){alert("Chưa có món trong order.");return}
-  const total=items.reduce((s,x)=>s+x.qty*x.price,0), now=new Date();
-  const order={id:Date.now(),date:key(),time:now.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}),items,total};
-  orders.push(order);
-  items.forEach(x=>{
-    const idx=menu.findIndex(m=>m.name===x.name);
-    if(idx>=0) counts[idx]=(counts[idx]||0)+x.qty;
-  });
-  history[key()]=calc();
-  orderCart={}; save(); render(); printOrder(order);
-}
-function clearOrder(){
-  if(Object.keys(orderCart).length && confirm("Xóa order đang chọn?")){orderCart={};save();render();}
-}
-function todayOrders(){return orders.filter(o=>o.date===key());}
-function renderTodayOrderStats(){
-  const list=todayOrders();
-  const revenue=list.reduce((s,o)=>s+(Number(o.total)||0),0);
-  const items=list.reduce((s,o)=>s+o.items.reduce((a,x)=>a+x.qty,0),0);
-  setText("todayOrders",list.length);
-  setText("todayRevenue",money(revenue));
-  setText("todayItems",items+" món đã chốt");
-}
-function deleteOrder(id){
-  const order=orders.find(o=>String(o.id)===String(id));
-  if(!order)return;
-  if(!confirm(`Xóa order #${String(order.id).slice(-6)}?\nDoanh thu và số món của order này sẽ được trừ lại.`))return;
-
-  // Trừ lại số lượng món mà order này đã cộng vào thống kê.
-  order.items.forEach(x=>{
-    const idx=menu.findIndex(m=>m.name===x.name);
-    if(idx>=0) counts[idx]=Math.max(0,(Number(counts[idx])||0)-(Number(x.qty)||0));
-  });
-
-  orders=orders.filter(o=>String(o.id)!==String(id));
-
-  // Cập nhật lại lịch sử ngày của order sau khi xóa.
-  const day=order.date;
-  const remaining=orders.filter(o=>o.date===day);
-  if(day===key()){
-    history[day]=calc();
-  }else{
-    // Giữ đúng dữ liệu lịch sử của ngày cũ theo các order còn lại,
-    // nhưng không làm mất các lượt bán nhập thủ công trong ngày đó.
-    // Với ngày hiện tại, counts là nguồn chính nên đã được cập nhật ở trên.
-    if(remaining.length){
-      const revenue=remaining.reduce((s,o)=>s+(Number(o.total)||0),0);
-      const items=remaining.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0),0),0);
-      const cost=remaining.reduce((s,o)=>s+o.items.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.cost)||0),0),0);
-      const h=history[day]||{cups:0,total:0,cost:0,profit:0};
-      history[day]={cups:Math.max(0,(Number(h.cups)||0)-items),total:Math.max(0,(Number(h.total)||0)-revenue),cost:Math.max(0,(Number(h.cost)||0)-cost)};
-      history[day].profit=history[day].total-history[day].cost;
-    }
-  }
-
-  save();
-  render();
-} 
-
-function renderOrderHistory(){
-  const list=todayOrders().slice().reverse();
-  document.getElementById("orderHistory").innerHTML=list.length?list.map(o=>{
-    const text=o.items.map(x=>`${x.name} × ${x.qty}`).join(", ");
-    return `<div><span>#${String(o.id).slice(-6)} • ${o.time}<br><small>${text}</small></span><strong>${money(o.total)}<br><button onclick='printOrder(${JSON.stringify(o)})' style="font-size:12px;padding:4px 7px">🖨️ In lại</button> <button onclick='deleteOrder(${JSON.stringify(o.id)})' style="font-size:12px;padding:4px 7px">🗑️ Xóa</button></strong></div>`;
-  }).join(""):"Chưa có order hôm nay.";
-}
-function printOrder(order){
-  const lines=order.items.map(x=>`<div class="line"><span>${x.name} × ${x.qty}</span><span>${money(x.qty*x.price)}</span></div>`).join("");
-  document.getElementById("invoice").innerHTML=`<h2>☕ TIN COFFEE</h2><div style="text-align:center">Hóa đơn #${String(order.id).slice(-6)}</div><div style="text-align:center">${order.date} ${order.time}</div><hr>${lines}<div class="line total"><span>TỔNG CỘNG</span><span>${money(order.total)}</span></div><div style="text-align:center;margin-top:10px">Cảm ơn quý khách!</div>`;
-  setTimeout(()=>window.print(),80);
-}
-
-function change(i,d){
- if(!active()){alert("Cafe Tin ❤️ bắt đầu bán từ Thứ Ba 18/08/2026 nhé ❤️");return}
- if(d>0) actions.push({i,old:counts[i]||0});
- counts[i]=Math.max(0,(counts[i]||0)+d);
- const k=key();
- history[k]=calc();
- save(); render();
-}
-function undo(){
- if(!actions.length){alert("Chưa có thao tác để hoàn tác.");return}
- const a=actions.pop(); counts[a.i]=a.old;
- history[key()]=calc(); save(); render();
-}
-function calc(){
- let cups=0,total=0,cost=0;
- menu.forEach((m,i)=>{
-   const q=Number(counts[i]||0);
-   cups+=q;
-   total+=q*(Number(m.price)||0);
-   cost+=q*(Number(m.cost)||0);
- });
- return {cups,total,cost,profit:total-cost};
-}
-function renderHistory(){
- const keys=Object.keys(history).filter(k=>k>=START_DATE).sort().reverse();
- document.getElementById("history").innerHTML=keys.length?keys.map(k=>{
-   const x=history[k], g=grabForDate(k), gc=grabCostForRows(g.rows);
-   const combinedQty=(Number(x.cups)||0)+g.qty;
-   const revenue=(Number(x.total)||0)+g.net;
-   const cost=(Number(x.cost)||0)+gc;
-   const exp=expensesForDate(k);
-   const profit=revenue-cost-exp;
-   return `<div><span>${new Date(k+"T00:00:00").toLocaleDateString("vi-VN")}<br><small>Chi phí: ${money(exp)}</small></span><strong>${money(revenue)} • ${combinedQty} món<br><small>Lãi: ${money(profit)}</small></strong></div>`
- }).join(""):"Chưa có dữ liệu.";
-}
-
-function grabForDate(date){
-  const rows=grabRows.filter(x=>x.date===date);
-  return {
-    rows,
-    qty:rows.reduce((s,x)=>s+numVal(x.qty),0),
-    gross:rows.reduce((s,x)=>s+numVal(x.gross),0),
-    discount:rows.reduce((s,x)=>s+numVal(x.discount),0),
-    fee:rows.reduce((s,x)=>s+numVal(x.fee),0),
-    net:rows.reduce((s,x)=>s+numVal(x.net),0)
-  };
-}
-function grabCostForRows(rows){
-  let cost=0;
-  rows.forEach(x=>{
-    const m=menu.find(m=>norm(m.name)===norm(x.item));
-    if(m) cost+=numVal(x.qty)*(Number(m.cost)||0);
-  });
-  return cost;
-}
-function expensesForDate(date){
-  return expenses.filter(x=>x.date===date).reduce((s,x)=>s+(Number(x.amount)||0),0);
-}
-function monthlyStoreStats(ym){
-  let revenue=0,cost=0,qty=0;
-  Object.entries(history).forEach(([d,v])=>{
-    if(d>=START_DATE&&d.startsWith(ym)){
-      revenue+=Number(v.total)||0;
-      qty+=Number(v.cups)||0;
-      cost+=Number(v.cost)||0;
-    }
-  });
-  return {revenue,cost,qty,profit:revenue-cost};
-}
-function monthlyCombinedQty(ym){
-  const storeQty=monthlyStoreStats(ym).qty;
-  const grabQty=grabRows.filter(x=>x.date&&x.date.startsWith(ym)).reduce((s,x)=>s+numVal(x.qty),0);
-  return storeQty+grabQty;
-}
-function monthlyGrabStats(ym){
-  const rows=grabRows.filter(x=>x.date&&x.date.startsWith(ym));
-  const net=rows.reduce((s,x)=>s+numVal(x.net),0);
-  const cost=grabCostForRows(rows);
-  return {net,cost,qty:rows.reduce((s,x)=>s+numVal(x.qty),0),profit:net-cost};
-}
-function monthlyOtherExpenses(ym){
-  return expenses.filter(x=>x.date&&x.date.startsWith(ym)).reduce((s,x)=>s+(Number(x.amount)||0),0);
-}
-function renderProfitReports(){
-  const d=key(), ym=d.slice(0,7);
-  const dayStore=history[d]||{total:0,cost:0};
-  const dayGrab=grabForDate(d), dayGrabCost=grabCostForRows(dayGrab.rows);
-  const dayExpenses=expensesForDate(d);
-  const dayRevenue=(Number(dayStore.total)||0)+dayGrab.net;
-  const dayCost=(Number(dayStore.cost)||0)+dayGrabCost;
-  const dayProfit=dayRevenue-dayCost-dayExpenses;
-  setText("dailyStoreRevenue",money(Number(dayStore.total)||0));
-  setText("dailyGrabRevenue",money(dayGrab.net));
-  setText("dailyTotalRevenue",money(dayRevenue));
-  setText("dailyStoreCost",money(Number(dayStore.cost)||0));
-  setText("dailyGrabCost",money(dayGrabCost));
-  setText("dailyTotalCost",money(dayCost));
-  setText("dailyExpenses",money(dayExpenses));
-  setText("dailyProfit",money(dayProfit));
-  setText("dailyMargin",(dayRevenue?(dayProfit/dayRevenue*100):0).toFixed(1)+"%");
-
-  const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym), me=monthlyOtherExpenses(ym);
-  const mr=ms.revenue+mg.net, mc=ms.cost+mg.cost, mp=mr-mc-me;
-  setText("monthStoreRevenue",money(ms.revenue));
-  setText("monthGrabRevenue",money(mg.net));
-  setText("monthRevenueFull",money(mr));
-  setText("monthStoreCost",money(ms.cost));
-  setText("monthGrabCost",money(mg.cost));
-  setText("monthCostFull",money(mc));
-  setText("monthExpensesFull",money(me));
-  setText("monthProfitFull",money(mp));
-  setText("monthMarginFull",(mr?(mp/mr*100):0).toFixed(1)+"%");
-}
-
-function renderMonth(){
- const ym=key().slice(0,7);
- const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym);
- const total=ms.revenue+mg.net;
- const cups=ms.qty+mg.qty;
- setText("monthTotal",money(total));
- setText("monthCups",cups+" món trong tháng");
-}
-renderMonthlySummary();
-
-function showExpenseForm(){
-  const f=document.getElementById("expenseForm");
-  f.style.display=f.style.display==="none"?"block":"none";
-  if(f.style.display==="block" && !document.getElementById("expenseDate").value)
-    document.getElementById("expenseDate").value=key();
-}
-function addExpense(){
-  const date=document.getElementById("expenseDate").value||key();
-  const name=document.getElementById("expenseName").value.trim();
-  const amount=Math.max(0,Number(document.getElementById("expenseAmount").value)||0);
-  if(!name){alert("Em nhập tên khoản chi nhé.");return}
-  if(!amount){alert("Em nhập số tiền nhé.");return}
-  expenses.push({id:Date.now(),date,name,amount});
-  save();
-  document.getElementById("expenseName").value="";
-  document.getElementById("expenseAmount").value="";
-  renderExpenses();
-  alert("Đã lưu khoản chi.");
-}
-function deleteExpense(id){
-  if(!confirm("Xóa khoản chi này?"))return;
-  expenses=expenses.filter(x=>x.id!==id);
-  save(); renderExpenses();
-}
-function renderExpenses(){
-  const ym=key().slice(0,7);
-  let total=0;
-  expenses.forEach(x=>{if(x.date && x.date.startsWith(ym)) total+=Number(x.amount)||0});
-  setText("expenseTotal",money(total));
-  const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym);
-  const revenue=ms.revenue+mg.net;
-  const cost=ms.cost+mg.cost;
-  const profit=revenue-cost-total;
-  setText("profitTotal",money(profit));
-  const list=expenses.filter(x=>x.date && x.date.startsWith(ym)).sort((a,b)=>
-    (b.date||"").localeCompare(a.date||"") || b.id-a.id);
-  document.getElementById("expenseHistory").innerHTML=list.length?list.map(x=>
-    `<div><span>${new Date(x.date+"T00:00:00").toLocaleDateString("vi-VN")} • ${x.name}</span>
-     <strong>${money(Number(x.amount)||0)} <button onclick="deleteExpense(${x.id})" style="font-size:12px;padding:4px 7px">Xóa</button></strong></div>`
-  ).join(""):"Chưa có khoản chi tháng này.";
-}
-
-function showAddItem(){
-  const box=document.getElementById("addItemBox");
-  box.style.display=box.style.display==="none"?"block":"none";
-  if(box.style.display==="block") document.getElementById("newItemName").focus();
-}
-function addItem(){
-  const name=document.getElementById("newItemName").value.trim();
-  const price=Math.max(0,Number(document.getElementById("newItemPrice").value)||0);
-  const cost=Math.max(0,Number(document.getElementById("newItemCost").value)||0);
-  if(!name){alert("Em nhập tên món nhé.");return}
-  if(!price){alert("Em nhập giá bán nhé.");return}
-  menu.push({name,price,cost});
-  save();
-  document.getElementById("newItemName").value="";
-  document.getElementById("newItemPrice").value="";
-  document.getElementById("newItemCost").value="";
-  document.getElementById("addItemBox").style.display="none";
-  render();
-  alert("Đã thêm món mới.");
-}
-
-
-function renderCostManager(){
-  const box=document.getElementById("costManager");
-  if(!box) return;
-  box.innerHTML=menu.map((m,i)=>{
-    const q=Number(counts[i]||0);
-    const c=Number(m.cost)||0;
-    const revenue=q*(Number(m.price)||0);
-    const costTotal=q*c;
-    const profit=revenue-costTotal;
-    return `<div style="padding:9px 0;border-bottom:1px solid #eee">
-      <div class="row">
-        <span class="name"><strong>${m.name}</strong><div class="price">Giá bán: ${money(m.price)}</div></span>
-        <input id="cm${i}" type="number" min="0" step="1" inputmode="numeric" value="${c}" placeholder="Cost"
-          style="width:120px;text-align:right;position:relative;z-index:5;pointer-events:auto"
-          oninput="saveOneCost(${i}, this.value)" onchange="saveOneCost(${i}, this.value)">
-      </div>
-      <div style="font-size:12px;margin-top:5px">
-        Hôm nay: ${q} món • Vốn: <strong>${money(costTotal)}</strong> • Lãi gộp: <strong>${money(profit)}</strong>
-      </div>
-    </div>`;
-  }).join("");
-}
-function saveOneCost(i, value){
-  if(!menu[i]) return;
-  const raw=String(value==null?"":value).trim();
-  if(raw==="") return;
-  const n=Number(raw);
-  if(!Number.isFinite(n) || n<0) return;
-  menu[i].cost=Math.max(0,n);
-  const costs={};
-  menu.forEach(m=>{costs[String(m.name||"").trim()]=Math.max(0,Number(m.cost)||0)});
-  localStorage.setItem("tinMenu",JSON.stringify(menu));
-  localStorage.setItem("tinCosts",JSON.stringify(costs));
-}
-function saveCostManager(){
-  let changed=0;
-  menu=menu.map((m,i)=>{
-    const el=document.getElementById("cm"+i);
-    const raw=el ? String(el.value).trim() : "";
-    // Không để ô trống vô tình biến Cost thành 0.
-    const cost=raw==="" ? Math.max(0,Number(m.cost)||0) : Math.max(0,Number(raw)||0);
-    if(el && raw!=="" && Number.isFinite(Number(raw))) changed++;
-    return {name:String(m.name||"").trim(),price:Math.max(0,Number(m.price)||0),cost};
-  });
-  // Lưu cả menu và bảng Cost riêng, sau đó dùng cùng một hàm save() để tránh ghi đè dữ liệu.
-  save();
-  renderCostManager();
-  alert("Đã lưu Cost từng món" + (changed ? " thành công." : "."));
-}
-
-function showPrices(){
- const box=document.getElementById("pricesBox");box.style.display=box.style.display==="none"?"block":"none";
- document.getElementById("priceInputs").innerHTML=menu.map((m,i)=>`
- <div style="padding:7px 0;border-bottom:1px solid #eee">
-   <div class="name">${m.name}</div>
-   <div class="row" style="margin-top:5px">
-     <span style="font-size:12px;flex:1">Giá bán</span><input id="p${i}" type="number" value="${m.price}">
-     <span style="font-size:12px;flex:1">Giá vốn</span><input id="c${i}" type="number" value="${m.cost||0}">
-   </div>
- </div>`).join("");
-}
-function savePrices(){
- menu=menu.map((m,i)=>({
-   name:m.name,
-   price:Math.max(0,Number(document.getElementById("p"+i).value)||0),
-   cost:Math.max(0,Number(document.getElementById("c"+i).value)||0)
- }));
- save();
- render(); alert("Đã lưu giá món.");
-}
-function newDay(){
- if(!confirm("Xóa số liệu hôm nay? Lịch sử các ngày trước vẫn giữ nguyên."))return;
- counts={};actions=[];orderCart={};history[key()]={cups:0,total:0,cost:0,profit:0};save();render();
-}
-
-
-// ===== GRABFOOD CSV =====
-let grabColumnMap={date:"",item:"",qty:"",gross:"",discount:"",fee:"",net:""};
-
-function csvParse(text){
-  text=text.replace(/^\uFEFF/,"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
-  const lines=text.split("\n").filter(x=>x.trim()!=="");
-  if(!lines.length)return {headers:[],rows:[]};
-  const delimiter=(lines[0].split(";").length>lines[0].split(",").length)?";":",";
-  function parseLine(line){
-    const out=[];let cur="",q=false;
-    for(let i=0;i<line.length;i++){
-      const ch=line[i];
-      if(ch==='"'){
-        if(q && line[i+1]==='"'){cur+='"';i++} else q=!q;
-      }else if(ch===delimiter && !q){out.push(cur.trim());cur=""}
-      else cur+=ch;
-    }
-    out.push(cur.trim()); return out;
-  }
-  const headers=parseLine(lines[0]);
-  const rows=lines.slice(1).map(line=>{
-    const a=parseLine(line),o={};headers.forEach((h,i)=>o[h]=(a[i]??"").trim());return o;
-  });
-  return {headers,rows};
-}
-function norm(s){
-  return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d")
-    .replace(/[^a-z0-9]+/g," ").trim();
-}
-function findHeader(headers,keys){
-  return headers.find(h=>keys.some(k=>norm(h).includes(norm(k))))||"";
-}
-function autoMap(headers){
-  return {
-    date:findHeader(headers,["date","ngay","order date","transaction date","datetime"]),
-    item:findHeader(headers,["item","mon","product","dish","menu item","item name","ten mon"]),
-    qty:findHeader(headers,["qty","quantity","so luong","quantity sold","units"]),
-    gross:findHeader(headers,["gross sales","gross","doanh thu gop","sales","item total","subtotal"]),
-    discount:findHeader(headers,["discount","giam gia","promotion","promo"]),
-    fee:findHeader(headers,["grab fee","platform fee","commission","service fee","phi grab","phi"]),
-    net:findHeader(headers,["net total","net sales","net","thuc nhan","net amount"])
-  };
-}
-function numVal(v){
-  if(v===null||v===undefined||v==="")return 0;
-  let s=String(v).replace(/\s/g,"").replace(/[₫đ]/gi,"");
-  if(s.includes(",") && s.includes(".")){
-    if(s.lastIndexOf(",")>s.lastIndexOf(".")) s=s.replace(/\./g,"").replace(",",".");
-    else s=s.replace(/,/g,"");
-  }else if(s.includes(",")){
-    const parts=s.split(",");
-    s=parts.length===2 && parts[1].length<=2 ? s.replace(",",".") : s.replace(/,/g,"");
-  }
-  s=s.replace(/[^\d.-]/g,"");
-  return Number(s)||0;
-}
-function dateKey(v){
-  if(!v)return key();
-  const s=String(v).trim();
-  let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-  if(m)return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
-  m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
-  if(m)return `${m[3]}-${String(m[2]).padStart(2,"0")}-${String(m[1]).padStart(2,"0")}`;
-  const d=new Date(s); return isNaN(d)?key():d.toISOString().slice(0,10);
-}
-function renderGrabMapping(){
-  const labels={date:"Ngày *",item:"Tên món *",qty:"Số lượng *",gross:"Doanh thu món",discount:"Giảm giá/khuyến mãi",fee:"Phí Grab",net:"Net/Thực nhận"};
-  const options=(sel)=>`<option value="">— Không dùng —</option>`+grabRawHeaders.map(h=>`<option value="${h.replace(/"/g,"&quot;")}" ${h===sel?"selected":""}>${h}</option>`).join("");
-  document.getElementById("grabMapping").innerHTML=Object.keys(labels).map(k=>
-    `<div style="margin-bottom:7px"><label style="font-size:13px">${labels[k]}</label>
-      <select id="gm_${k}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:9px">${options(grabColumnMap[k])}</select></div>`
-  ).join("");
-}
-function importGrabCSV(event){
-  const file=event.target.files && event.target.files[0]; if(!file)return;
-  grabPendingFileName=file.name;
-  const reader=new FileReader();
-  reader.onload=()=>{try{
-    const parsed=csvParse(reader.result);
-    if(!parsed.headers.length)throw new Error("CSV trống");
-    grabRawHeaders=parsed.headers; grabRawRows=parsed.rows; grabColumnMap=autoMap(parsed.headers);
-    renderGrabMapping();
-    document.getElementById("grabMappingBox").style.display="block";
-  }catch(e){alert("Không đọc được CSV. Hãy kiểm tra file.");}
-  finally{event.target.value="";}};
-  reader.readAsText(file,"UTF-8");
-}
-function applyGrabMapping(){
-  const keys=["date","item","qty","gross","discount","fee","net"];
-  keys.forEach(k=>grabColumnMap[k]=document.getElementById("gm_"+k).value);
-  if(!grabColumnMap.date||!grabColumnMap.item||!grabColumnMap.qty){
-    alert("Cần chọn đủ Ngày, Tên món và Số lượng.");return;
-  }
-  const imported=[];
-  grabRawRows.forEach(r=>{
-    const item=String(r[grabColumnMap.item]||"").trim();
-    const qty=numVal(r[grabColumnMap.qty]);
-    if(!item||qty<=0)return;
-    const gross=grabColumnMap.gross?numVal(r[grabColumnMap.gross]):0;
-    const discount=grabColumnMap.discount?numVal(r[grabColumnMap.discount]):0;
-    const fee=grabColumnMap.fee?numVal(r[grabColumnMap.fee]):0;
-    const net=grabColumnMap.net?numVal(r[grabColumnMap.net]):Math.max(0,gross-discount-fee);
-    imported.push({id:Date.now()+imported.length,date:dateKey(r[grabColumnMap.date]),item,qty,gross,discount,fee,net,source:grabPendingFileName});
-  });
-  if(!imported.length){alert("Không tìm thấy dòng dữ liệu hợp lệ.");return;}
-  // Replace previous import with the same source file name to prevent accidental double counting.
-  grabRows=grabRows.filter(x=>x.source!==grabPendingFileName);
-  grabRows.push(...imported);
-  save(); document.getElementById("grabMappingBox").style.display="none"; render(); 
-  alert(`Đã nhập ${imported.length} dòng từ ${grabPendingFileName}.`);
-}
-function grabTotals(){
-  const ym=key().slice(0,7);
-  const rows=grabRows.filter(x=>x.date&&x.date.startsWith(ym));
-  return {
-    rows,
-    qty:rows.reduce((s,x)=>s+numVal(x.qty),0),
-    gross:rows.reduce((s,x)=>s+numVal(x.gross),0),
-    discount:rows.reduce((s,x)=>s+numVal(x.discount),0),
-    fee:rows.reduce((s,x)=>s+numVal(x.fee),0),
-    net:rows.reduce((s,x)=>s+numVal(x.net),0)
-  };
-}
-function storeTotals(){
-  const ym=key().slice(0,7); let revenue=0,qty=0,cost=0;
-  Object.entries(history).forEach(([d,v])=>{
-    if(d>=START_DATE&&d.startsWith(ym)){revenue+=numVal(v.total);qty+=numVal(v.cups);}
-  });
-  Object.entries(counts).forEach(([i,q])=>{
-    const item=menu[Number(i)]; if(item) cost+=numVal(q)*(item.cost||0);
-  });
-  return {revenue,qty,cost,profit:revenue-cost};
-}
-function grabProfit(){
-  const t=grabTotals(); let cost=0;
-  const byName={};
-  t.rows.forEach(x=>{
-    const m=menu.find(m=>norm(m.name)===norm(x.item));
-    if(m)cost+=numVal(x.qty)*(m.cost||0);
-  });
-  return {profit:t.net-cost,cost};
-}
-
-function renderProfitByItem(){
-  const t=grabTotals(), map={};
-  t.rows.forEach(x=>{
-    if(!map[x.item]) map[x.item]={qty:0,net:0};
-    map[x.item].qty+=numVal(x.qty); map[x.item].net+=numVal(x.net);
-  });
-  const names=Object.keys(map).sort((a,b)=>map[b].qty-map[a].qty);
-  if(!names.length){document.getElementById("profitByItem").innerHTML="Chưa có dữ liệu Grab để tính lợi nhuận.";return;}
-  document.getElementById("profitByItem").innerHTML=names.map(name=>{
-    const m=menu.find(m=>norm(m.name)===norm(name)), cost=m?Number(m.cost)||0:0;
-    const costTotal=map[name].qty*cost, profit=map[name].net-costTotal;
-    const margin=map[name].net?(profit/map[name].net*100):0;
-    return `<div style="padding:8px 0;border-bottom:1px solid #eee">
-      <div class="row"><span class="name"><strong>${name}</strong></span><strong>${map[name].qty} món</strong></div>
-      <div style="font-size:12px;margin-top:3px">Thực nhận: ${money(map[name].net)} • Cost: ${money(costTotal)} (${money(cost)}/món)</div>
-      <div style="font-size:13px;margin-top:3px"><strong>Lãi: ${money(profit)}</strong> • Biên: <strong>${margin.toFixed(1)}%</strong></div>
-    </div>`;
-  }).join("");
-}
-
-function renderGrab(){
-  const t=grabTotals(), gp=grabProfit(), st=storeTotals();
-  const totalRev=t.net+st.revenue, totalProfit=gp.profit+st.profit;
-  document.getElementById("grabSummary").innerHTML=
-    `<div><strong>${t.rows.length}</strong> dòng Grab trong tháng</div>
-     <div style="margin-top:5px"><strong>${t.qty}</strong> món • Doanh thu/Thực nhận: <strong>${money(t.net)}</strong></div>
-     <div style="margin-top:5px">Doanh thu món: ${money(t.gross)} • Giảm giá: ${money(t.discount)} • Phí Grab: ${money(t.fee)}</div>
-     <div style="margin-top:5px">Giá vốn ước tính: ${money(gp.cost)} • <strong>Lợi nhuận Grab: ${money(gp.profit)}</strong></div>`;
-  const map={};
-  t.rows.forEach(x=>{
-    const k=x.item; if(!map[k])map[k]={qty:0,net:0};
-    map[k].qty+=numVal(x.qty);map[k].net+=numVal(x.net);
-  });
-  const names=Object.keys(map).sort((a,b)=>map[b].qty-map[a].qty);
-  document.getElementById("grabItems").innerHTML=names.length?
-    `<div class="section" style="font-size:16px;margin:0 0 5px">Món bán trên Grab</div>`+
-    names.map(n=>`<div><span>${n}</span><strong>${map[n].qty} món • ${money(map[n].net)}</strong></div>`).join("")
-    :"Chưa có dữ liệu Grab tháng này.";
-  const sources=[...new Set(grabRows.map(x=>x.source).filter(Boolean))];
-  document.getElementById("grabImportHistory").innerHTML=sources.length?
-    `<div class="note">File đã nhập: ${sources.join(" • ")}</div>`:"";
-  setText("compareGrabRevenue",money(t.net));
-  setText("compareStoreRevenue",money(st.revenue));
-  setText("compareTotalRevenue",money(totalRev));
-  setText("compareGrabShare",(totalRev?((t.net/totalRev)*100).toFixed(1):"0")+"%");
-  setText("compareGrabMargin",(t.net?(gp.profit/t.net*100):0).toFixed(1)+"%");
-  setText("compareStoreMargin",(st.revenue?(st.profit/st.revenue*100):0).toFixed(1)+"%");
-  setText("compareGrabCost",money(gp.cost));
-  setText("compareGrabProfit",money(gp.profit));
-  setText("compareStoreCost",money(st.cost));
-  setText("compareStoreProfit",money(st.profit));
-  setText("compareTotalProfit",money(totalProfit));
-  renderProfitByItem();
-}
-function downloadGrabTemplate(){
-  const csv="Ngày,Tên món,Số lượng,Doanh thu món,Giảm giá/khuyến mãi,Phí Grab,Net/Thực nhận\n2026-08-18,Cà phê sữa,2,30000,0,6000,24000\n";
-  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mau-import-grab-cafe-tin.csv";
-  document.body.appendChild(a);a.click();a.remove();
-}
-
-function emergencyDump(){
-  try{
-    const all={};
-    for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i);
-      if(k!==null) all[k]=localStorage.getItem(k);
-    }
-    const parsed={};
-    Object.keys(all).forEach(k=>{
-      try{ parsed[k]=JSON.parse(all[k]); }catch(e){ parsed[k]=all[k]; }
-    });
-    const payload={
-      type:"CAFE_TIN_EMERGENCY_DUMP",
-      version:1,
-      exportedAt:new Date().toISOString(),
-      origin:location.origin,
-      keys:Object.keys(all),
-      localStorage:parsed
-    };
-    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    const stamp=new Date().toISOString().replace(/[:.]/g,"-");
-    a.href=url;
-    a.download="CAFE-TIN-CUU-DU-LIEU-"+stamp+".json";
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-    const current={history:history,counts:counts,actions:actions,expenses:expenses,orders:orders,orderCart:orderCart,grabRows:grabRows,menu:menu};
-    const signal=JSON.stringify(current);
-    localStorage.setItem("tinEmergencyLastExport",JSON.stringify({at:new Date().toISOString(),keyCount:Object.keys(all).length,hasBusinessData:signal.length>50}));
-    alert("Đã xuất toàn bộ dữ liệu đang có trong Chrome. Hãy giữ file này nguyên vẹn và gửi lại cho anh nếu cần phục hồi.");
-  }catch(e){
-    alert("Không thể xuất dữ liệu cứu hộ: "+e.message);
-  }
-}
-
-function backupData(){
-  const data={
-    version:3,
-    exportedAt:new Date().toISOString(),
-    tinMenu:menu,
-    tinCosts:Object.fromEntries(menu.map(m=>[String(m.name||"").trim(),Math.max(0,Number(m.cost)||0)])),
-    tinHistory:history,
-    tinToday:counts,
-    tinActions:actions,
-    tinExpenses:expenses,
-    tinOrders:orders,
-    tinOrderCart:orderCart,
-    tinGrabRows:grabRows
-  };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  const stamp=new Date().toISOString().slice(0,10);
-  a.href=url;
-  a.download="quaytin-sao-luu-"+stamp+".json";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-  alert("Đã tạo file sao lưu. Hãy lưu file này ở nơi an toàn.");
-}
-
-function rebuildHistoryFromOrders(list){
-  const h={};
-  (Array.isArray(list)?list:[]).forEach(o=>{
-    const date=String(o && o.date || '').trim();
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
-    if(!h[date]) h[date]={cups:0,total:0,cost:0,profit:0};
-    const items=Array.isArray(o.items)?o.items:[];
-    items.forEach(it=>{
-      const q=Math.max(0,Number(it.qty)||0);
-      const price=Math.max(0,Number(it.price)||0);
-      const cost=Math.max(0,Number(it.cost)||0);
-      h[date].cups+=q;
-      h[date].total+=q*price;
-      h[date].cost+=q*cost;
-      h[date].profit+=q*(price-cost);
-    });
-  });
-  return h;
-}
-
-function restoreData(event){
-  const input=event && event.target;
-  const file=input && input.files && input.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(){
-    try{
-      const text=String(reader.result||'').replace(/^\uFEFF/,'').trim();
-      if(!text) throw new Error('File rỗng.');
-      const data=JSON.parse(text);
-      if(!data || !Array.isArray(data.tinMenu)) throw new Error('Thiếu tinMenu.');
-      if(data.tinHistory!=null && (typeof data.tinHistory!=='object' || Array.isArray(data.tinHistory))) throw new Error('tinHistory không hợp lệ.');
-      if(data.tinToday!=null && (typeof data.tinToday!=='object' || Array.isArray(data.tinToday))) throw new Error('tinToday không hợp lệ.');
-      if(data.tinActions!=null && !Array.isArray(data.tinActions)) throw new Error('tinActions không hợp lệ.');
-      if(data.tinExpenses!=null && !Array.isArray(data.tinExpenses)) throw new Error('tinExpenses không hợp lệ.');
-      if(data.tinOrders!=null && !Array.isArray(data.tinOrders)) throw new Error('tinOrders không hợp lệ.');
-
-      if(!confirm('Khôi phục sẽ thay dữ liệu hiện tại bằng dữ liệu trong file. Tiếp tục?')) return;
-
-      const newMenu=data.tinMenu.map(m=>Array.isArray(m)
-        ? {name:String(m[0]||''),price:Number(m[1])||0,cost:Number(m[2])||0}
-        : {name:String(m.name||''),price:Number(m.price)||0,cost:Number(m.cost)||0});
-      const newOrders=Array.isArray(data.tinOrders)?data.tinOrders:[];
-      const rebuilt=rebuildHistoryFromOrders(newOrders);
-      const newHistory=Object.keys(rebuilt).length ? rebuilt : (data.tinHistory||{});
-      const newCosts=(data.tinCosts && typeof data.tinCosts==='object' && !Array.isArray(data.tinCosts)) ? data.tinCosts : {};
-      newMenu.forEach(m=>{
-        const k=String(m.name||'').trim();
-        if(Object.prototype.hasOwnProperty.call(newCosts,k)) m.cost=Math.max(0,Number(newCosts[k])||0);
-      });
-
-      // Gán dữ liệu trước khi lưu để các hàm hiện tại dùng đúng dữ liệu khôi phục.
-      menu=newMenu;
-      history=newHistory;
-      counts=data.tinToday||{};
-      actions=data.tinActions||[];
-      expenses=data.tinExpenses||[];
-      orders=newOrders;
-      orderCart=data.tinOrderCart||{};
-      grabRows=Array.isArray(data.tinGrabRows)?data.tinGrabRows:[];
-      savedCosts=newCosts;
-
-      // Lưu từng khóa; lỗi sẽ được báo đúng khóa thay vì bị nuốt thành 'file không hợp lệ'.
-      save();
-      render();
-      alert('Đã khôi phục thành công: '+orders.length+' đơn hàng, '+expenses.length+' khoản chi.\nĐã tính lại lịch sử theo đơn hàng.');
-    }catch(e){
-      console.error('Cafe Tin restore error:',e);
-      alert('Không thể khôi phục: '+(e && e.message ? e.message : String(e)));
-    }finally{
-      if(input) input.value='';
-    }
-  };
-  reader.onerror=function(){
-    alert('Không thể đọc file sao lưu. Hãy thử chọn lại file JSON.');
-    if(input) input.value='';
-  };
-  reader.readAsText(file,'utf-8');
-}
-
-render();
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js", {scope: "./"})
-      .catch(err => console.log("Service worker:", err));
-  });
-}
-
-function monthlyExpenseTotal(ym){
-  let total=0;
-  Object.entries(expenses||{}).forEach(([k,v])=>{
-    if(k.startsWith(ym)) total += Number(v.total||0);
-  });
-  return total;
-}
-function renderMonthlySummary(){
-  const ym=key().slice(0,7);
-  const ms=monthlyStoreStats(ym), mg=monthlyGrabStats(ym);
-  const revenue=ms.revenue+mg.net;
-  const cost=ms.cost+mg.cost;
-  const expenses=monthlyExpenseTotal(ym);
-  const profit=revenue-cost-expenses;
-  const set=(id,val)=>{const e=document.getElementById(id); if(e)e.textContent=money(val)};
-  set("monthlyRevenueTotal",revenue);
-  set("monthlyCostTotal",cost);
-  set("monthlyExpenseTotal",expenses);
-  set("monthlyProfitTotal",profit);
-}
-
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active')});
+$('saveOrder').onclick=addOrder;$('clearCart').onclick=()=>{cart={};renderMenu()};$('addExpense').onclick=addExpense;$('addManualRevenue').onclick=addManualRevenue;$('addSetup').onclick=addSetup;$('monthPick').value=today().slice(0,7);$('monthPick').onchange=renderStats;$('thisMonth').onclick=()=>{$('monthPick').value=today().slice(0,7);renderStats()};$('downloadBackup').onclick=downloadBackup;$('restoreBtn').onclick=()=>$('restoreFile').click();$('restoreFile').onchange=e=>{if(e.target.files[0])restore(e.target.files[0]);e.target.value=''};$('addMenu').onclick=()=>{menu.push({name:'Món mới',price:0,cost:0});save();render()};$('editMoney').onclick=updateMoney;$('clearData').onclick=()=>{if(confirm('Xóa toàn bộ dữ liệu trên thiết bị? Hãy chắc chắn đã tải file sao lưu.')){[K.menu,K.orders,K.expenses,K.setup,K.cash,K.bank].forEach(k=>localStorage.removeItem(k));menu=[];orders=[];expenses=[];setup=[];cash=0;bank=0;save();render()}};
+$('expenseDate').value=today();$('manualDate').value=today();
+// Hỗ trợ nhập file sao lưu cũ của Cafe Tin.
+window.addEventListener('beforeunload',autoBackup);autoBackup();render();
 </script>
-<div class="section">📅 Tổng kết tháng</div>
-<div class="card">
-  <div class="row"><span class="name">Tổng doanh thu tháng</span><strong id="monthlyRevenueTotal">0đ</strong></div>
-  <div class="row"><span class="name">Tổng giá vốn tháng</span><strong id="monthlyCostTotal">0đ</strong></div>
-  <div class="row"><span class="name">Tổng chi phí tháng</span><strong id="monthlyExpenseTotal">0đ</strong></div>
-  <hr>
-  <div class="row"><span class="name">LỢI NHUẬN THÁNG</span><strong class="big" id="monthlyProfitTotal">0đ</strong></div>
-</div>
-</body>
-</html>
+<script>
+(function(){
+  const KEY = 'tinCafeDailyBalances';
+  const money = n => new Intl.NumberFormat('vi-VN').format(Number(n)||0) + ' đ';
+
+  function todayVN(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function load(){
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e){ return {}; }
+  }
+  function save(x){ localStorage.setItem(KEY, JSON.stringify(x)); }
+
+  function inject(){
+    if(document.getElementById('dailyBalanceBox')) return;
+    const box = document.createElement('section');
+    box.id='dailyBalanceBox';
+    box.style.cssText='margin:16px 0;padding:16px;border-radius:16px;background:#fff;border:1px solid #ddd';
+    box.innerHTML = `
+      <h3 style="margin:0 0 10px">💵 Tiền mặt & 🏦 Bank theo ngày</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <label>Ngày<input id="dbDate" type="date" style="width:100%;padding:9px"></label>
+        <div></div>
+        <label>Tiền mặt hiện có<input id="dbCash" type="number" min="0" style="width:100%;padding:9px" placeholder="0"></label>
+        <label>Bank hiện có<input id="dbBank" type="number" min="0" style="width:100%;padding:9px" placeholder="0"></label>
+      </div>
+      <button id="dbSave" style="margin-top:10px;padding:10px 14px">Lưu số dư ngày</button>
+      <div id="dbMsg" style="margin-top:8px"></div>
+    `;
+    const target = document.querySelector('main') || document.body;
+    target.insertBefore(box, target.firstChild);
+
+    const date = box.querySelector('#dbDate');
+    const cash = box.querySelector('#dbCash');
+    const bank = box.querySelector('#dbBank');
+    const msg = box.querySelector('#dbMsg');
+    date.value = todayVN();
+
+    function fill(){
+      const x=load()[date.value];
+      cash.value = x ? (x.cash ?? '') : '';
+      bank.value = x ? (x.bank ?? '') : '';
+    }
+    date.addEventListener('change', fill);
+    box.querySelector('#dbSave').onclick=()=>{
+      const all=load();
+      all[date.value]={cash:Number(cash.value)||0,bank:Number(bank.value)||0,updatedAt:new Date().toISOString()};
+      save(all);
+      msg.textContent='Đã lưu số dư của ngày '+date.value;
+    };
+    fill();
+  }
+
+  // This is a daily record: changing today's value does not overwrite other days.
+  // Existing app data remains untouched.
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject);
+  else inject();
+})();
+</script>
+
+</body></html>
